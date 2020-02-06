@@ -1,0 +1,89 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Employee;
+use App\EmployeeStatus;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class EmployeeStatusController extends Controller
+{
+    public function index()
+    {
+        $statuses = EmployeeStatus::paginate(10);
+        // dd($statuses);
+        return view('emp_status.index', compact('statuses'));
+    }
+
+    // public function priority($id)
+    // {
+    //     $status = EmployeeStatus::where('emp_id',$id)->delete();
+        
+    //     if($status){
+    //         return redirect('employee/status');
+    //     }
+    // }
+
+    public function priority()
+    {
+        $statuses = EmployeeStatus::where('ispriority', 1)->paginate(10);
+        // dd($statuses);
+        return view('emp_status.index', compact('statuses'));
+    }
+
+    public function remove_priority($id)
+    {
+        $status = EmployeeStatus::where('emp_id', $id)->delete();
+
+        if($status){
+            return redirect('admin/employee/status/priority');
+        }
+    }
+
+    public function blacklist()
+    {
+        $statuses = EmployeeStatus::where('isblacklist', 1)->paginate(10);
+
+        return view('emp_status.index', compact('statuses'));
+    }
+
+    public function remove_blacklist($id)
+    {
+        $status = EmployeeStatus::where('emp_id', $id)->delete();
+
+        if($status){
+            return redirect('admin/employee/status/blacklist');
+        }
+    }
+
+    public function create()
+    {
+        //
+    }
+
+    public function store(Request $request)
+    {
+        //
+    }
+
+    public function show(EmployeeStatus $employeeStatus)
+    {
+        //
+    }
+
+    public function edit(EmployeeStatus $employeeStatus)
+    {
+        //
+    }
+
+    public function update(Request $request, EmployeeStatus $employeeStatus)
+    {
+        //
+    }
+
+    public function destroy(EmployeeStatus $employeeStatus)
+    {
+        //
+    }
+}
