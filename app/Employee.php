@@ -22,4 +22,9 @@ class Employee extends Model
     {
         return $this->hasMany('App\Feedback');
     }
+
+    public function seat()
+    {
+        return $this->hasOne('App\SeatStatus');
+    }
 }

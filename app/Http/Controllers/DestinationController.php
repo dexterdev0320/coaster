@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Destination;
+use App\Http\Resources\Destination as DestinationResource;
 use Illuminate\Http\Request;
 
 class DestinationController extends Controller
@@ -15,6 +16,13 @@ class DestinationController extends Controller
     public function index()
     {
         //
+    }
+
+    public function indexapi()
+    {
+        $destinations = Destination::all();
+
+        return DestinationResource::collection($destinations);
     }
 
     /**

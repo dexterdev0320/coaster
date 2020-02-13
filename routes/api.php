@@ -19,8 +19,19 @@ use Illuminate\Support\Facades\Auth;
 
 
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
-Route::get('employee', 'EmployeeController@indexapi');
+Route::get('employees', 'EmployeeController@indexapi');
+
+
+Route::get('seats', 'SeatStatusController@indexapi');
+Route::put('seat', 'SeatStatusController@update');
+// Route::match(['get', 'post'], 'seats/update', function(){
+//     dd('hit');
+// });
+Route::get('available-seats', 'SeatStatusController@availableseats');
+
+Route::get('destinations', 'DestinationController@indexapi');
+

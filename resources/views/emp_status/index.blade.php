@@ -9,12 +9,14 @@
 			    <h3>Employee {{ (strpos($_SERVER['REQUEST_URI'], 'priority') ? 'Priorities' : 'Blacklist') }}</h3>
 			  </div>
 			  <div class="card-body">
-                <form action="#" method="GET">
+                  
+                <form action="{{ (strpos($_SERVER['REQUEST_URI'], 'priority')) ? route('status.priority') : route('status.blacklist') }}" method="POST">
+                    @csrf
                         <div class="input-group mb-4 mt-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Search</span>
                             </div>
-                            <input type="text" name="employee" class="form-control" placeholder="Employee's name" aria-label="Employee's name" aria-describedby="button-addon2">
+                            <input type="text" name="name" class="form-control" placeholder="Employee's name" aria-label="Employee's name" aria-describedby="button-addon2">
                             <div class="input-group-append">
                             <button class="btn btn-outline-secondary">Button</button>
                             </div>
@@ -33,14 +35,14 @@
                         <tbody>
                             @foreach($statuses as $status)
                                 <tr>
-                                    <th scope="row">{{ $status->employee->emp_id }}</th>
-                                    <td>{{ $status->employee->name }}</td>
-                                    <td>{{ $status->employee->dept }}</td>
+                                    <th scope="row">{{ $status->emp_id }}</th>
+                                    <td>{{ $status->name }}</td>
+                                    <td>{{ $status->dept }}</td>
                                     <td>
                                         <a 
                                         href="{{ (strpos($_SERVER['REQUEST_URI'], 'priority')) ? 
-                                        route('status.rmpriority', $status->emp_id) : 
-                                        route('status.rmblacklist', $status->emp_id) }}" 
+                                        route('status.rmpriority', $status->id) : 
+                                        route('status.rmblacklist', $status->id) }}" 
                                         class="btn btn-danger">
                                         {{ (strpos($_SERVER['REQUEST_URI'], 'priority')) ? 
                                         'Remove Priority' : 

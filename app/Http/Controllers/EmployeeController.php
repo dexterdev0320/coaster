@@ -18,6 +18,10 @@ class EmployeeController extends Controller
 
     public function index(Request $request)
     {
+        if(!empty($request->name)){
+            $employees = Employee::where('name', 'LIKE', '%' . $request->name . '%')->paginate(10)->appends(['name' => $request->name]);
+                return view('employee.index', compact('employees'));
+        }
         $employees = DB::table('employees')
                         ->leftJoin('employee_statuses', 'employees.id', '=', 'employee_statuses.emp_id')
                         ->select(['employees.*', 'employee_statuses.ispriority', 'employee_statuses.isblacklist'])
@@ -28,20 +32,26 @@ class EmployeeController extends Controller
 
     public function indexapi(Request $request)
     {
-        $employees = DB::table('employees')
-                        ->leftJoin('employee_statuses', 'employees.id', '=', 'employee_statuses.emp_id')
-                        ->select(['employees.*', 'employee_statuses.ispriority', 'employee_statuses.isblacklist'])
-                        ->paginate(10);
-        // dd($employees->all());
-        return $employees;
+        $employees = DB::select('select 
+                                    employees.*, 
+                                    employee_statuses.ispriority, 
+                                    employee_statuses.isblacklist 
+                                    from employees 
+                                    left join employee_statuses on employees.id = employee_statuses.emp_id
+                                    order by employees.emp_id asc');
+
+        return EmployeeResource::collection($employees);
     }
 
     public function search(Request $request)
     {
         // dd($request->all());
-        $employees = Employee::where('name', 'LIKE', '%'.$request->employee.'%')->paginate(10);
+        // if(!empty($request->name)){
+            
+        // }
+        // $employees = Employee::where('name', 'LIKE', '%'.$request->employee.'%')->paginate(10);
 
-        return view('employee.search', compact('employees'));
+        // return view('employee.search', compact('employees'));
     }
 
     public function create()

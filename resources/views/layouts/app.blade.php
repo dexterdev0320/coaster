@@ -15,12 +15,12 @@
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <style>
         body{
-            background-color: #4294e6;
+            background-color: white;
         }
     </style>
 </head>
@@ -37,10 +37,14 @@
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
+                    @auth
                     <ul class="navbar-nav mr-auto">
                         <li class="nav-item">
-                            <a href="{{ route('booking.index') }}" class="nav-link">Booking</a>
+                            <a href="{{ route('seat.index') }}" class="nav-link">Seat Status</a>
                         </li>
+                        {{-- <li class="nav-item">
+                            <a href="{{ route('booking.index') }}" class="nav-link">Bookings</a>
+                        </li> --}}
                         <li class="nav-item">
                             <a href="{{ route('schedule.index') }}" class="nav-link">Schedule</a>
                         </li>
@@ -80,6 +84,7 @@
                             </div>
                         </li>
                     </ul>
+                    @endauth
 
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -121,6 +126,5 @@
             @yield('content')
         </main>
     </div>
-<script type="text/javascript" src="js\app.js"></script>
 </body>
 </html>

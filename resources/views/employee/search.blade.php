@@ -15,7 +15,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Search</span>
                             </div>
-                            <input type="text" name="employee" class="form-control" placeholder="Employee's name" aria-label="Employee's name" aria-describedby="button-addon2">
+                            <input type="text" name="name" class="form-control" placeholder="Employee's name" aria-label="Employee's name" aria-describedby="button-addon2">
                             <div class="input-group-append">
                             <button class="btn btn-outline-secondary">Button</button>
                             </div>

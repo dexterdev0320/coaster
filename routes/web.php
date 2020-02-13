@@ -11,9 +11,9 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 // Auth::routes();
 
@@ -38,19 +38,20 @@ Route::prefix('admin')->group(function(){
     Route::get('/home', 'HomeController@index')->name('home');
 
     Route::prefix('employee')->group(function(){
-        Route::get('/', 'EmployeeController@index')->name('employee.index');
-        Route::get('search', 'EmployeeController@search')->name('employee.search');
+        Route::match(['get', 'post'], '/', 'EmployeeController@index')->name('employee.index');
+        // Route::get('/', 'EmployeeController@index')->name('employee.index');
+        // Route::post('search', 'EmployeeController@search')->name('employee.search');
         // Route::match(['GET', 'POST'], 'search', 'EmployeeController@search')->name('employee.search');
         Route::get('priority/{id}', 'EmployeeController@priority')->name('employee.priority');
         Route::get('blacklist/{id}', 'EmployeeController@blacklist')->name('employee.blacklist');
 
         Route::get('status', 'EmployeeStatusController@index')->name('status.index');
         
-        Route::get('status/priority', 'EmployeeStatusController@priority')->name('status.priority');
+        Route::match(['get', 'post'], 'status/priority', 'EmployeeStatusController@priority')->name('status.priority');
         Route::get('status/priority/{id}', 'EmployeeStatusController@remove_priority')->name('status.rmpriority');
         // Route::get('status/priority/{id}', 'EmployeeStatusController@priority')->name('status.priority');
 
-        Route::get('status/blacklist', 'EmployeeStatusController@blacklist')->name('status.blacklist');
+        Route::match(['get', 'post'], 'status/blacklist', 'EmployeeStatusController@blacklist')->name('status.blacklist');
         Route::get('status/blacklist/{id}', 'EmployeeStatusController@remove_blacklist')->name('status.rmblacklist');
     });
 
@@ -66,39 +67,14 @@ Route::prefix('admin')->group(function(){
     Route::get('blacklist', 'EmployeePriorityController@index')->name('blacklist.index');
 
     Route::get('feedback', 'FeedbackController@index')->name('feedback.index');
+
+    Route::get('seat_status', 'SeatStatusController@index')->name('seat.index');
+    Route::post('seat_status', 'SeatStatusController@acupdate')->name('seat.update');
 });
 
-// Route::get('admin/home', 'HomeController@index')->name('home');
 
-// Route::prefix('admin/employee')->group(function(){
-//     Route::get('/', 'EmployeeController@index')->name('employee.index');
-//     Route::get('search', 'EmployeeController@search')->name('employee.search');
-//     // Route::match(['GET', 'POST'], 'search', 'EmployeeController@search')->name('employee.search');
-//     Route::get('admin/priority/{id}', 'EmployeeController@priority')->name('employee.priority');
-//     Route::get('admin/blacklist/{id}', 'EmployeeController@blacklist')->name('employee.blacklist');
+Route::prefix('/')->group(function(){
+    Route::get('/', 'EmployeesController@index')->name('employees.index');
+});
 
-//     Route::get('admin/status', 'EmployeeStatusController@index')->name('status.index');
-    
-//     Route::get('priority', 'EmployeeStatusController@priority')->name('status.priority');
-//     Route::get('priority/{id}', 'EmployeeStatusController@remove_priority')->name('status.rmpriority');
-//     // Route::get('status/priority/{id}', 'EmployeeStatusController@priority')->name('status.priority');
-
-//     Route::get('blacklist', 'EmployeeStatusController@blacklist')->name('status.blacklist');
-//     Route::get('blacklist/{id}', 'EmployeeStatusController@remove_blacklist')->name('status.rmblacklist');
-// });
-
-// Route::prefix('admin/booking')->group(function(){
-//     Route::get('/', 'BookingController@index')->name('booking.index');
-// });
-
-// Route::prefix('admin/schedule')->group(function(){
-//     Route::get('/', 'ScheduleController@index')->name('schedule.index');
-// });
-
-
-// Route::get('admin/priority', 'EmployeePriorityController@index')->name('priority.index');
-// Route::get('admin/blacklist', 'EmployeePriorityController@index')->name('blacklist.index');
-
-
-
-
+Route::get('testing', 'EmployeesController@testing');

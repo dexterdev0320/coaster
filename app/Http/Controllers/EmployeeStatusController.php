@@ -25,9 +25,29 @@ class EmployeeStatusController extends Controller
     //     }
     // }
 
-    public function priority()
+    public function priority(Request $request)
     {
-        $statuses = EmployeeStatus::where('ispriority', 1)->paginate(10);
+        if(!empty($request->name)){
+            $statuses = DB::table('employee_statuses')
+                            ->join('employees', 'employee_statuses.emp_id', '=', 'employees.id')
+                            ->select('employees.*', 'employee_statuses.ispriority')
+                            ->where('employees.name', 'LIKE', '%'.$request->name.'%')
+                            ->where('employee_statuses.ispriority', 1)
+                            ->paginate(10);
+            $pagination = $statuses->appends(array(
+                'name' => $request->name
+            ));
+            // dd($statuses);
+            
+            if(count($statuses) > 0){
+                return view('emp_status.index', compact('statuses'));
+            }
+        }
+        $statuses = DB::table('employee_statuses')
+                        ->join('employees', 'employee_statuses.emp_id', '=', 'employees.id')
+                        ->select('employees.*', 'employee_statuses.ispriority')
+                        ->where('employee_statuses.ispriority', 1)
+                        ->paginate(10);
         // dd($statuses);
         return view('emp_status.index', compact('statuses'));
     }
@@ -41,9 +61,30 @@ class EmployeeStatusController extends Controller
         }
     }
 
-    public function blacklist()
+    public function blacklist(Request $request)
     {
-        $statuses = EmployeeStatus::where('isblacklist', 1)->paginate(10);
+        if(!empty($request->name)){
+            $statuses = DB::table('employee_statuses')
+                            ->join('employees', 'employee_statuses.emp_id', '=', 'employees.id')
+                            ->select('employees.*', 'employee_statuses.isblacklist')
+                            ->where('employees.name', 'LIKE', '%'.$request->name.'%')
+                            ->where('employee_statuses.isblacklist', 1)
+                            ->paginate(10);
+            $pagination = $statuses->appends(array(
+                'name' => $request->name
+            ));
+            // dd($statuses);
+            
+            if(count($statuses) > 0){
+                return view('emp_status.index', compact('statuses'));
+            }
+        }
+
+        $statuses = DB::table('employee_statuses')
+                        ->join('employees', 'employee_statuses.emp_id', '=', 'employees.id')
+                        ->select('employees.*', 'employee_statuses.isblacklist')
+                        ->where('employee_statuses.isblacklist', 1)
+                        ->paginate(10);
 
         return view('emp_status.index', compact('statuses'));
     }

@@ -9,13 +9,13 @@
 			    <h3>Employees</h3>
 			  </div>
 			  <div class="card-body">
-                <form action="{{ route('employee.search') }}" method="GET">
-                    {{-- @csrf --}}
+                <form action="{{ route('employee.index') }}" method="POST">
+                    @csrf
                         <div class="input-group mb-4 mt-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Search</span>
                             </div>
-                            <input type="text" name="employee" class="form-control" placeholder="Employee's name" aria-label="Employee's name" aria-describedby="button-addon2">
+                            <input type="text" name="name" class="form-control" placeholder="Employee's name" aria-label="Employee's name" aria-describedby="button-addon2">
                             <div class="input-group-append">
                             <button class="btn btn-outline-secondary">Button</button>
                             </div>

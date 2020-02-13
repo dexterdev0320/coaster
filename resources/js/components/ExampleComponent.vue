@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-lg-12">
             <div>
-                <h1>Dexter</h1>
+                <h1>MAIN</h1>
             </div>
         </div>
     </div>

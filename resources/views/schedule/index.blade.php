@@ -26,7 +26,7 @@
                                         <th scope="row">{{ $index+1 }}</th>
                                         <td>{{ $schedule->date }}</td>
                                         <td>{{ $schedule->day }}</td>
-                                        <td>{{ ($schedule->status == 1) ? 'Closed' : 'Open' }}</td>
+                                        <td>{{ ($schedule->status == 1) ? 'Open' : 'Closed' }}</td>
                                     </tr>
                                 @endif
                             @endforeach
