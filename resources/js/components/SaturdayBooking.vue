@@ -41,6 +41,7 @@
                             <li :class="'seat_'+seat.id" class="m-2"  @click="seatStatus(seat.id, seat.status)"
                                 style="background-repeat: no-repeat; width: 40px;height: 40px;"
                                 :style="{'background-image': 'url('+imageSelected(seat.status, seat.id)+')'}"
+                                
                                 >
                                 <a>
                                     {{ seat.id }}
@@ -55,11 +56,11 @@
                 <div class="row p-3">
 
                     <div class="col-lg-12 alert alert-success">
-                        <h3>Available: 0 Seats</h3>
+                        <h3>Available: {{ seats_available }} Seats</h3>
                     </div>
 
                     <div class="col-lg-12 alert alert-danger">
-                        <h3>Reserved: 0 Seats</h3>
+                        <h3>Reserved: {{ seats_reserved }} Seats</h3>
                     </div>
 
                 </div>
@@ -96,6 +97,10 @@
                             <div class="row">
                                 <div class="col-2 d-flex justify-content-center align-items-center"><h3>Seat no: {{ seatno }}</h3></div>
                                 <div class="col-5">
+                                    <!-- <input type="text" list="name_list" class="form-control">
+                                    <datalist id="name_list">
+                                        <option v-for="employee in employees" :key="employee.id" :value="employee.id">{{employee.emp_id}}</option>
+                                    </datalist> -->
                                     <select class="custom-select" id="inputGroupSelect02" name="employee" v-model="empid">
                                         <option selected disabled>Choose Employee ID</option>
                                         <option v-for="employee in employees" :key="employee.id" :value="employee.id">{{employee.emp_id}}</option>
@@ -138,6 +143,8 @@ export default {
                 status: '',
             },
             seatno: '',
+            seats_available: 0,
+            seats_reserved: 0,
             employees: {
                 id: '',
                 emp_id: '',
@@ -153,21 +160,25 @@ export default {
         }
     },
     mounted() {
-        console.log('SaturdayBooking');
+        console.log('Mounted');
         // this.fetchSeatsAPI();
+        
     },
     created() {
         // THIS WILL REFRESH THE API EVERY 5 SECONDS
-        setInterval(() => this.fetchSeatsAPI(), 5000);
-
+        setInterval(() => this.fetchSeatsAPI(), 5000)
         this.fetchSeatsAPI();
         this.fetchEmployeesAPI();
         this.fetchDestinationAPI();
+        
     },
     methods: {
         fetchSeatsAPI(){
             Axios.get('api/seats')
                 .then(res => this.seats = res.data.data)
+                .then(data => {
+                    this.seatsAvailable(this.seats);
+                })
                 .catch(err => console.log(err))
         },
         fetchEmployeesAPI(){
@@ -185,11 +196,27 @@ export default {
 				return 'image/booked_seat_img.gif';
             }else{
                 if(id > 16 && id < 24) {
+                    
                     return 'image/stall.png';
                 }else{
+                    
                     return 'image/available_seat_img.gif';
                 }
 			}
+        },
+        seatsAvailable(seat){
+            let total = seat.length;
+            let seats = seat;
+            this.seats_available = 0;
+            this.seats_reserved = 0;
+            for (let index = 0; index < total; index++) {
+                const element = seats[index];
+                if(element.status === 'Available'){
+                    this.seats_available += 1;
+                }else{
+                    this.seats_reserved += 1;
+                }
+            }
         },
         seatStatus(id, status){
             if(status === 'Occupied'){
@@ -208,11 +235,15 @@ export default {
                         dest_id: this.destid
                     })
                     .then(res => {
-                        this.fetchSeatsAPI();
-                        alert('Seat No.' + this.seatno + ' booked successfully');
-                        this.seatno = '';
-                        this.empid = '';
-                        this.destid = '';
+                        if(res.data.isvalid === false){
+                            alert('Employee has already a seat');
+                        }else{
+                            this.fetchSeatsAPI();
+                            alert('Seat No.' + this.seatno + ' booked successfully');
+                            this.seatno = '';
+                            this.empid = '';
+                            this.destid = '';
+                        }
                     });
             }
         }

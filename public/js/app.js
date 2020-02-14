@@ -2167,6 +2167,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -2179,6 +2184,8 @@ __webpack_require__.r(__webpack_exports__);
         status: ''
       },
       seatno: '',
+      seats_available: 0,
+      seats_reserved: 0,
       employees: {
         id: '',
         emp_id: ''
@@ -2193,7 +2200,7 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   mounted: function mounted() {
-    console.log('SaturdayBooking'); // this.fetchSeatsAPI();
+    console.log('Mounted'); // this.fetchSeatsAPI();
   },
   created: function created() {
     var _this = this;
@@ -2212,6 +2219,8 @@ __webpack_require__.r(__webpack_exports__);
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('api/seats').then(function (res) {
         return _this2.seats = res.data.data;
+      }).then(function (data) {
+        _this2.seatsAvailable(_this2.seats);
       })["catch"](function (err) {
         return console.log(err);
       });
@@ -2245,6 +2254,22 @@ __webpack_require__.r(__webpack_exports__);
         }
       }
     },
+    seatsAvailable: function seatsAvailable(seat) {
+      var total = seat.length;
+      var seats = seat;
+      this.seats_available = 0;
+      this.seats_reserved = 0;
+
+      for (var index = 0; index < total; index++) {
+        var element = seats[index];
+
+        if (element.status === 'Available') {
+          this.seats_available += 1;
+        } else {
+          this.seats_reserved += 1;
+        }
+      }
+    },
     seatStatus: function seatStatus(id, status) {
       if (status === 'Occupied') {
         return alert('Seat is already occupied. Please choose another seat');
@@ -2263,12 +2288,16 @@ __webpack_require__.r(__webpack_exports__);
           emp_id: this.empid,
           dest_id: this.destid
         }).then(function (res) {
-          _this5.fetchSeatsAPI();
+          if (res.data.isvalid === false) {
+            alert('Employee has already a seat');
+          } else {
+            _this5.fetchSeatsAPI();
 
-          alert('Seat No.' + _this5.seatno + ' booked successfully');
-          _this5.seatno = '';
-          _this5.empid = '';
-          _this5.destid = '';
+            alert('Seat No.' + _this5.seatno + ' booked successfully');
+            _this5.seatno = '';
+            _this5.empid = '';
+            _this5.destid = '';
+          }
         });
       }
     }
@@ -38097,7 +38126,23 @@ var render = function() {
         ]
       ),
       _vm._v(" "),
-      _vm._m(2)
+      _c("div", { staticClass: "col-lg-4" }, [
+        _c("div", { staticClass: "row p-3" }, [
+          _c("div", { staticClass: "col-lg-12 alert alert-success" }, [
+            _c("h3", [
+              _vm._v("Available: " + _vm._s(_vm.seats_available) + " Seats")
+            ])
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "col-lg-12 alert alert-danger" }, [
+            _c("h3", [
+              _vm._v("Reserved: " + _vm._s(_vm.seats_reserved) + " Seats")
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _vm._m(2)
+      ])
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "row mt-3" }, [
@@ -38314,42 +38359,30 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "col-lg-4" }, [
-      _c("div", { staticClass: "row p-3" }, [
-        _c("div", { staticClass: "col-lg-12 alert alert-success" }, [
-          _c("h3", [_vm._v("Available: 0 Seats")])
-        ]),
+    return _c("div", { staticClass: "row p-3" }, [
+      _c("div", { staticClass: "col-lg-12 alert alert-info" }, [
+        _c("h3", [_vm._v("Inquire Booking:")]),
         _vm._v(" "),
-        _c("div", { staticClass: "col-lg-12 alert alert-danger" }, [
-          _c("h3", [_vm._v("Reserved: 0 Seats")])
-        ])
-      ]),
-      _vm._v(" "),
-      _c("div", { staticClass: "row p-3" }, [
-        _c("div", { staticClass: "col-lg-12 alert alert-info" }, [
-          _c("h3", [_vm._v("Inquire Booking:")]),
+        _c("div", { staticClass: "input-group mb-3" }, [
+          _c("input", {
+            staticClass: "form-control",
+            attrs: {
+              type: "text",
+              name: "code",
+              placeholder: "Enter Seat's code",
+              "aria-label": "Recipient's username"
+            }
+          }),
           _vm._v(" "),
-          _c("div", { staticClass: "input-group mb-3" }, [
-            _c("input", {
-              staticClass: "form-control",
-              attrs: {
-                type: "text",
-                name: "code",
-                placeholder: "Enter Seat's code",
-                "aria-label": "Recipient's username"
-              }
-            }),
-            _vm._v(" "),
-            _c("div", { staticClass: "input-group-append" }, [
-              _c(
-                "button",
-                {
-                  staticClass: "btn btn-outline-secondary",
-                  attrs: { type: "button", id: "button-addon2" }
-                },
-                [_vm._v("Button")]
-              )
-            ])
+          _c("div", { staticClass: "input-group-append" }, [
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-outline-secondary",
+                attrs: { type: "button", id: "button-addon2" }
+              },
+              [_vm._v("Button")]
+            )
           ])
         ])
       ])

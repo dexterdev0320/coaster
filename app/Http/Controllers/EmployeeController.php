@@ -19,13 +19,13 @@ class EmployeeController extends Controller
     public function index(Request $request)
     {
         if(!empty($request->name)){
-            $employees = Employee::where('name', 'LIKE', '%' . $request->name . '%')->paginate(10)->appends(['name' => $request->name]);
+            $employees = Employee::where('name', 'LIKE', '%' . $request->name . '%')->paginate(13)->appends(['name' => $request->name]);
                 return view('employee.index', compact('employees'));
         }
         $employees = DB::table('employees')
                         ->leftJoin('employee_statuses', 'employees.id', '=', 'employee_statuses.emp_id')
                         ->select(['employees.*', 'employee_statuses.ispriority', 'employee_statuses.isblacklist'])
-                        ->paginate(10);
+                        ->paginate(13);
         // dd($employees->all());
         return view('employee.index', compact('employees'));
     }

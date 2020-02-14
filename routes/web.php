@@ -69,7 +69,8 @@ Route::prefix('admin')->group(function(){
     Route::get('feedback', 'FeedbackController@index')->name('feedback.index');
 
     Route::get('seat_status', 'SeatStatusController@index')->name('seat.index');
-    Route::post('seat_status', 'SeatStatusController@acupdate')->name('seat.update');
+    Route::post('seat_status', 'SeatStatusController@updateall')->name('seat.updateall');
+    Route::get('seat_status/{id}', 'SeatStatusController@indiupdate')->name('seat.updateindi');
 });
 
 
