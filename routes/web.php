@@ -17,7 +17,7 @@
 
 // Auth::routes();
 
-
+        Route::get('admin', 'Auth\LoginController@showLoginForm')->name('login');
         Route::get('admin/login', 'Auth\LoginController@showLoginForm')->name('login');
         Route::post('admin/login', 'Auth\LoginController@login');
         Route::post('admin/logout', 'Auth\LoginController@logout')->name('logout');

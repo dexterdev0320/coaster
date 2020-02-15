@@ -38,7 +38,7 @@
                     
                         <div v-for="seat in seats" :key="seat.id">
                             <!-- seatno = seat.id -->
-                            <li :class="'seat_'+seat.id" class="m-2"  @click="seatStatus(seat.id, seat.status)"
+                            <li :class="{highlight:seat.id == selected}" class="m-2"  @click="seatStatus(seat.id, seat.status)"
                                 style="background-repeat: no-repeat; width: 40px;height: 40px;"
                                 :style="{'background-image': 'url('+imageSelected(seat.status, seat.id)+')'}"
                                 
@@ -68,16 +68,19 @@
                 <div class="row p-3">
                     <div class="col-lg-12 alert alert-info">
                         <h3>Inquire Booking:</h3>
-
-                        <div class="input-group mb-3">
-                            <input type="text" name="code" class="form-control" placeholder="Enter Seat's code" aria-label="Recipient's username">
-                            
-                            <div class="input-group-append">
-                            <button class="btn btn-outline-secondary" type="button" id="button-addon2">Button</button>
+                        <form @submit.prevent="searchCode">
+                            <div class="input-group mb-3">
+                                <input type="text" name="code" class="form-control" placeholder="Enter Seat's code" aria-label="Recipient's username" v-model="seat_code">
+                                
+                                <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Search</button>
+                                </div>
                             </div>
-
+                        </form>
+                        <div v-if="detail_visible === true">
+                            <hr>
+                            <h5>Seat No: 52</h5>
                         </div>
-                        
                     </div>
 
                 </div>
@@ -115,12 +118,6 @@
                                 <div class="col-2"><button class="btn btn-primary">Submit</button></div>
                             </div>
                         </form>
-                        <hr>
-                        <div class="row">
-                            <div class="col-12">
-                                <h1>DETAIls</h1>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -133,6 +130,7 @@
 import Axios from 'axios'
 
 export default {
+    
     data() {
         return {
             seats: {
@@ -141,10 +139,13 @@ export default {
                 code: '',
                 dest_id: '',
                 status: '',
-            },
+            }, 
+            selected: undefined,
             seatno: '',
             seats_available: 0,
             seats_reserved: 0,
+            detail_visible: false,
+            seat_code: '',
             employees: {
                 id: '',
                 emp_id: '',
@@ -156,16 +157,18 @@ export default {
             },
             destid: '',
             updateseat: {},
-            
+            interval: undefined,
         }
     },
-    mounted() {
-        console.log('Mounted');
-        // this.fetchSeatsAPI();
+    updated() {
         
+    },
+    mounted() {
+        // this.fetchSeatsAPI();
     },
     created() {
         // THIS WILL REFRESH THE API EVERY 5 SECONDS
+        // setInterval(() => this.fetchSeatsAPI(), 5000)
         setInterval(() => this.fetchSeatsAPI(), 5000)
         this.fetchSeatsAPI();
         this.fetchEmployeesAPI();
@@ -223,6 +226,7 @@ export default {
                 return alert('Seat is already occupied. Please choose another seat');
             }else{
                 this.seatno = id;
+                this.selected = id;
             }
         },
         updateSeat(){
@@ -243,12 +247,34 @@ export default {
                             this.seatno = '';
                             this.empid = '';
                             this.destid = '';
+                            this.selected = undefined;
                         }
                     });
             }
+        },
+        searchCode(){
+            if(this.seat_code === ''){
+                alert('Please insert seat code');
+            }else{
+                console.log(this.seats.length);
+            }
+            // if(this.seat_code === ''){
+            //     alert('Please insert seat code');
+            // }else{
+            //     console.log(this.seat_code);
+            //     Axios.post('api/seat/code', {
+            //         seat_code: this.seat_code
+            //     })
+            //     .then(res => console.log(res));
+            // }
         }
     }
     
 }
 </script>
 
+<style>
+    li.highlight{
+        background-image: url('../assets/selected_seat_img.gif') !important;
+    }
+</style>

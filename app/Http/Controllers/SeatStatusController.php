@@ -125,6 +125,11 @@ class SeatStatusController extends Controller
         // }
     }
 
+    public function searchCode(Request $request){
+        $seat = SeatStatus::where('code', 'LIKE', '%' . $request->seat_code . '%')->first();
+        dd($seat);
+    }
+
     public function destroy(SeatStatus $seatStatus)
     {
         //

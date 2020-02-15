@@ -28,6 +28,8 @@ Route::get('employees', 'EmployeeController@indexapi');
 
 Route::get('seats', 'SeatStatusController@indexapi');
 Route::put('seat', 'SeatStatusController@update');
+
+Route::match(['get', 'post'],'seat/code', 'SeatStatusController@searchCode');
 // Route::match(['get', 'post'], 'seats/update', function(){
 //     dd('hit');
 // });
