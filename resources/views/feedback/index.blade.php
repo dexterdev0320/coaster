@@ -12,17 +12,19 @@
             <table class="table table-bordered table-hover">
                 <thead>
                 <tr>
-                    <th scope="col">Seq No.</th>
+                    {{-- <th scope="col">Seq No.</th> --}}
                     <th scope="col">Employee's Name</th>
                     <th scope="col">Feedback</th>
+                    <th scope="col">Posted on</th>
                 </tr>
                 </thead>
                 <tbody>
                     @foreach($feedbacks as $feedback)
                         <tr>
-                            <th scope="row">{{ $feedback->id }}</th>
+                            {{-- <th scope="row">{{ $feedback->id }}</th> --}}
                             <td>{{ $feedback->employee->name }}</td>
                             <td>{{ $feedback->feedback }}</td>
+                            <td>{{ $feedback->created_at }}</td>
                         </tr>
                     @endforeach
                 </tbody>

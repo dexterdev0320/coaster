@@ -14,7 +14,12 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Search</span>
                             </div>
-                            <input type="text" name="name" class="form-control" placeholder="Employee's name" aria-label="Employee's name" aria-describedby="button-addon2">
+                            <input type="text" name="name" 
+                            class="form-control" 
+                            placeholder="Employee's name" 
+                            aria-label="Employee's name" 
+                            aria-describedby="button-addon2"
+                            value="{{ old('name') }}">
                             <div class="input-group-append">
                             <button class="btn btn-outline-secondary">Submit</button>
                             </div>
@@ -63,4 +68,3 @@
     </div>
 </div>
 @endsection
-

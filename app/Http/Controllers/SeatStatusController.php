@@ -2,136 +2,267 @@
 
 namespace App\Http\Controllers;
 
+use App\Destination;
+use App\Employee;
+use App\EmployeeStatus;
 use App\SeatStatus;
 use App\Http\Resources\SeatStatus as SeatResource;
+use App\Schedule;
+use App\SeatLogs;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class SeatStatusController extends Controller
 {
-    public function index()
+    public function booking()
     {
-        $seats = SeatStatus::all();
-        // dd($seats);
-        return view('seat.index', compact('seats'));
+        return view('booking.index');
+    }
+    public function monday(){
+        $seats = SeatStatus::where('day', 'Monday')
+                            ->get();
+        
+        if($seats){
+            return view('seat.index', compact('seats'));
+        }
     }
 
+    public function saturday(){
+        $seats = SeatStatus::where('day', 'Saturday')
+                            ->get();
+
+        if($seats){
+            return view('seat.index', compact('seats'));
+        }
+    }
+
+    public function summary(){
+        return view('seat.show');
+    }
+
+    public function cancel(Request $request, $id)
+    {
+        $seat = SeatStatus::where('id', $id)->first();
+
+        if($seat){
+            $employee = Employee::where('id', $seat->emp_id)->first();
+
+            if($employee){
+                $destination = Destination::where('id', $seat->dest_id)->first();
+
+                if($destination){
+                    $schedule = Schedule::where('day', $seat->day)
+                                            ->where('status', 1)
+                                            ->orderBy('date', 'ASC')
+                                            ->first();
+                    if($schedule){
+                        $log = SeatLogs::create([
+                            'emp_id' => $employee->emp_id,
+                            'name' => $employee->name,
+                            'seat_no' => $seat->seat_no,
+                            'destination' => $destination->place,
+                            'day' => $schedule->day,
+                            'date' => $schedule->date,
+                            'status' => 'Cancelled',
+                            'cancelledby' => auth()->user()->name
+                        ]);
+
+                        if($log){
+                            $status = SeatStatus::where('id', $id)
+                                                ->update([
+                                                    'emp_id' => null,
+                                                    'code' => null,
+                                                    'dest_id' => null,
+                                                    'status' => 1
+                                                ]);
+                            if($status){
+                                return back();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function cancel_all(Request $request){
+        $seats = $request->all();
+        
+        foreach($seats as $index=>$seat){
+            if($index != '_token'){
+                $seat = SeatStatus::where('id', $index)->first();
+
+                if($seat){
+                    $employee = Employee::where('id', $seat->emp_id)->first();
+
+                    if($employee){
+                        $destination = Destination::where('id', $seat->dest_id)->first();
+
+                        if($destination){
+                            $schedule = Schedule::where('day', $seat->day)
+                                                    ->where('status', 1)
+                                                    ->orderBy('date', 'ASC')
+                                                    ->first();
+                            if($schedule){
+                                $log = SeatLogs::create([
+                                    'emp_id' => $employee->emp_id,
+                                    'name' => $employee->name,
+                                    'seat_no' => $seat->seat_no,
+                                    'destination' => $destination->place,
+                                    'day' => $schedule->day,
+                                    'date' => $schedule->date,
+                                    'status' => 'Canceled',
+                                    'cancelledby' => auth()->user()->name
+                                ]);
+
+                                if($log){
+                                    $status = SeatStatus::where('id', $index)
+                                                        ->update([
+                                                            'emp_id' => null,
+                                                            'code' => null,
+                                                            'dest_id' => null,
+                                                            'status' => 1
+                                                        ]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return back();
+    }
+
+    public function print($day)
+    {
+        $seats = SeatStatus::where('day', 'LIKE', '%'.$day.'%')->get();
+        $schedule = Schedule::where('day', 'LIKE', '%'.$day.'%')
+                            ->where('status', 1)
+                            ->first();
+
+        return view('seat.print', compact('seats', 'schedule'));
+    }
+
+
+    // API STARTS HERE
+    
     public function indexapi()
     {
         $seats = SeatStatus::all();
-        // dd($seats);
+
         return SeatResource::collection($seats);
     }
 
-    public function availableseats()
+    // UPDATE THE SCHEDULE
+    public function refresh_all(Request $request)
     {
-        $seats = SeatStatus::where('status', '1')->get();
+        dd($request->all());
+        $saturday = $request->saturday;
+        
+        $dateToday = date("Y-m-d");
 
-        return json_encode($seats);
+        if($saturday['date'] >= $dateToday){
+            return response()->json(['success' => false, 'message' => 'No schedule to be updated.']);
+        }
+
+        foreach($request->all() as $request){
+            Schedule::where('id', $request['id'])
+                    ->update([ 'status' => 0]);
+        }
+        return response()->json(['success' => true, 'message' => 'Schedule updated successfully']);
+        
     }
 
-    public function create()
-    {
-        //
-    }
-
-    public function store(Request $request)
-    {
-        //
-    }
-
-    public function show(SeatStatus $seatStatus, Request $request)
-    {
-        //
-    }
-
-    public function edit(SeatStatus $seatStatus)
-    {
-        //
-    }
-
-    public function indiupdate(Request $request, $id){
-        // dd($id);
-        $seat = SeatStatus::where('id', $id)->update([
+    
+    public function seats(Request $request){
+        $sched = Schedule::where('status', 0)->orderBy('date', 'DESC')->first();
+        
+        SeatStatus::where('status', 0)
+        ->where(DB::raw("CONVERT(date, updated_at, 110)"), '<=', $sched->date)
+        ->update([
             'emp_id' => null,
             'code' => null,
             'dest_id' => null,
             'status' => 1
         ]);
 
-        if($seat){
-            return back();
-        }
-    }
+        $seats = SeatStatus::where('day', 'like', '%'.$request->day.'%')->get();
 
-    public function updateall(Request $request){
-        // dd('yow');
-        $seats = $request->all();
-        foreach($seats as $k=>$v){
-            if($k != '_token'){
-                $status = SeatStatus::where('id', $k)
-                            ->update([
-                                'emp_id' => null,
-                                'code' => null,
-                                'dest_id' => null,
-                                'status' => 1
-                            ]);
-            }
-        }
-        if(isset($status)){
-            return back();
-        }else{
-            return back();
-        }
-    }
+        if(count($seats) != 0){
 
+            return SeatResource::collection($seats);
+        }
+
+        $total_seats = 40;
+        for ($i=1; $i <= $total_seats; $i++) { 
+            SeatStatus::create([
+                'seat_no' => $i,
+                'status' => 1,
+                'day' => $request->day,
+            ]);
+        }
+        
+        return SeatResource::collection($seats);
+
+    }
+    
     public function update(Request $request, SeatStatus $seatStatus)
     {
-        // dd($request->all());
-        $seat = SeatStatus::where('id', $request->seat_id)
+        $seat = SeatStatus::where('seat_no', $request->seat_no)
                         ->where('status', 1)
+                        ->where('day', $request->day)
                         ->first();
+        
         if($seat){
-            $check_employee = SeatStatus::where('emp_id', $request->emp_id)->first();
+
+            $check_employee = SeatStatus::where('emp_id', $request->emp_id)
+                                        ->where('day', $request->day)
+                                        ->first();
 
             if($check_employee){
-                return response()->json(['isvalid'=>false,'errors'=> 'Employee has already a seat']);
+                return response()->json(['success'=>false, 'message'=> 'Employee already have a seat']);
             }
-
-            $upd_seat = SeatStatus::where('id', $request->seat_id)->update([
-                        'emp_id' => $request->emp_id,
-                        'code' => Str::random(5),
-                        'dest_id' => $request->dest_id,
-                        'status' => 0,
-                    ]);
-                
+            $code = Str::random(5);
+            $upd_seat = SeatStatus::where('seat_no', $request->seat_no)
+                                    ->where('day', $request->day)
+                                    ->update([
+                                            'emp_id' => $request->emp_id,
+                                            'code' => $code,
+                                            'dest_id' => $request->dest_id,
+                                            'status' => 0,
+                                        ]);
+                   
                 if($upd_seat){
-                    return response()->json($upd_seat);
+                    
+                    $employee = Employee::where('id', $request->emp_id)->first();
+
+                    if($employee){
+                        $destination = Destination::where('id', $request->dest_id)->first();
+                        
+                        if($destination){
+                            $log = SeatLogs::create([
+                                'emp_id' => $employee->emp_id,
+                                'name' => $employee->name,
+                                'seat_no' => $request->seat_no,
+                                'destination' => $destination->place,
+                                'day' => $request->day,
+                                'date' => Carbon::today(),
+                                'status' => 'Booked',
+                            ]);
+                            if($log){
+                                return response()->json(['success' => true, 'message' => "HOVER ME! Booked successfully. Use this Code: ".$code." to inquire Booking."]);
+                            }
+                        }
+                    }
+
+                    
                 }
         }
 
-        return response()->json(['error' => 'Seat is already booked']);
-
-        // $seat = SeatStatus::where('id', $request->seat_id)->update([
-        //     'emp_id' => $request->emp_id,
-        //     'code' => Str::random(5),
-        //     'dest_id' => $request->dest_id,
-        //     'status' => 0,
-        // ]);
-
-        // if($seat){
-        //     dd('hit');
-        //     return new SeatStatus();
-        // }
-    }
-
-    public function searchCode(Request $request){
-        $seat = SeatStatus::where('code', 'LIKE', '%' . $request->seat_code . '%')->first();
-        dd($seat);
-    }
-
-    public function destroy(SeatStatus $seatStatus)
-    {
-        //
+        return response()->json(['success' => false, 'message' => 'Seat is already booked']);
     }
 }

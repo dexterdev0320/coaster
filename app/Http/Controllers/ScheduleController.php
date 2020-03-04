@@ -10,47 +10,41 @@ class ScheduleController extends Controller
 {
     public function index()
     {
-        // $schedules = Schedule::orderBy('date', 'desc')->paginate(10);
         $open_schedules = DB::table('schedules')->where('status', 0)->limit(2);
-        // $schedules = DB::table('schedules')->where('status', 1)->orderBy('date', 'DESC')->LIMIT(18)->union($open_schedules)->get();
+
         $schedules = DB::select('select * from schedules
                                 where status = 0
                                 union all
                                 select top 2 * from schedules
                                 where status = 1
                                 order by date desc');
-        // dd($test);
+
         return view('schedule.index', compact('schedules'));
 
     }
-
-    public function create()
+    
+    public function latest_sched()
     {
-        //
-    }
+        $todayPlusTwo = date('Y-m-d', strtotime('2 days'));
+        $today = date('Y-m-d');
+        $schedules = Schedule::where('status', 1)
+                            ->limit(2)
+                            ->get();
 
-    public function store(Request $request)
-    {
-        //
-    }
+        $schedulesDecoded = json_decode($schedules);
+        
+        $scheduleSaturdayIndex = array_search('Saturday', array_column($schedulesDecoded, 'day'), True);
 
-    public function show(Schedule $schedule)
-    {
-        //
-    }
+        $scheduleSaturday = $schedules[$scheduleSaturdayIndex];
+        
+        if($scheduleSaturday->date < $today){
+            DB::update('update schedules set status = 0 where status = ? and date <= ?', [1, $todayPlusTwo]);
+        }
 
-    public function edit(Schedule $schedule)
-    {
-        //
-    }
-
-    public function update(Request $request, Schedule $schedule)
-    {
-        //
-    }
-
-    public function destroy(Schedule $schedule)
-    {
-        //
+        $schedules = Schedule::where('status', 1)
+                            ->limit(2)
+                            ->get();
+        
+        return response()->json($schedules);
     }
 }

@@ -2,13 +2,16 @@
 
 @section('content')
 <div class="container">
-    <div class="row">
+    <div class="row mb-2">
         <div class="col-lg-12 d-flex justify-content-between align-items-center">
             <div>
-                <h2>Booking Record</h2>
+                <h2>Booking Record {{ (strpos($_SERVER['REQUEST_URI'], 'monday') ? 'Monday' : 'Saturday') }}</h2>
             </div>
             <div>
-                <button type="button" class="btn btn-danger mb-2" data-toggle="modal" data-target="#exampleModal">
+                <a class="btn btn-info" href="{{ route('seat.print', (strpos($_SERVER['REQUEST_URI'], 'monday') ? 'monday' : 'saturday')) }}" target="_blank">
+                    <i class="fas fa-print"></i>
+                </a>
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
                     Cancel Checked Seat/s
                 </button>
             </div>
@@ -16,7 +19,7 @@
     </div>
     <div class="row text-center">
         <div class="col-md-12">
-            <form action="{{ route('seat.updateall') }}" method="POST">
+            <form action="{{ route('seat.cancel_all') }}" method="POST">
                 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -53,17 +56,17 @@
                         </tr>
                         </thead>
                         <tbody>
-                            @foreach ($seats as $seat)
+                            @foreach ($seats as $index=>$seat)
                                 <tr>
                                     <td><input type="checkbox" name="{{ $seat->id }}" {{ ($seat->emp_id) ? '' : 'hidden' }}></td>
-                                    <th scope="row">{{ $seat->id }}</th>
+                                    <th scope="row">{{ $seat->seat_no }}</th>
                                     <td>{{ ($seat->emp_id) ? $seat->employee->emp_id : '' }}</td>
                                     <td>{{ ($seat->emp_id) ? $seat->employee->name : '' }}</td>
                                     <td>{{ ($seat->emp_id) ? $seat->employee->department : '' }}</td>
                                     <td>{{ ($seat->dest_id) ? $seat->destination->place : '' }}</td>
                                     <td>{{ $seat->code }}</td>
                                     <td>{{ $seat->status }}</td>
-                                    <td><a href="{{ route('seat.updateindi', $seat->id) }}" class="btn btn-danger btn-sm" {{ ($seat->emp_id) ? '' : 'hidden' }}>Cancel</a></td>
+                                    <td><a href="{{ route('seat.cancel', $seat->id) }}" class="btn btn-danger btn-sm" {{ ($seat->emp_id) ? '' : 'hidden' }}>Cancel</a></td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -74,4 +77,3 @@
     </div>
 </div>
 @endsection
-

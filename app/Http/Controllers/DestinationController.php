@@ -4,90 +4,71 @@ namespace App\Http\Controllers;
 
 use App\Destination;
 use App\Http\Resources\Destination as DestinationResource;
+use App\SeatStatus;
 use Illuminate\Http\Request;
 
 class DestinationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        //
+        return view('destination.index');
     }
+    
+    // API STARTS HERE
 
-    public function indexapi()
+    // GET ALL THE DESTINATION
+    public function fetch_all_destination()
     {
         $destinations = Destination::all();
 
         return DestinationResource::collection($destinations);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    // INSERT NEW DESTINATION
+    public function new_destination(Request $request)
     {
-        //
+        $dest = Destination::where('place', 'LIKE', '%' . $request->place . '%')->get();
+
+        if(count($dest) > 0){
+            return response()->json(['success' => false, 'message' => 'Destination is already created']);
+        }
+
+        $store = Destination::create([
+            'place' => $request->place,    
+        ]);
+
+        if($store){
+            return response()->json(['success' => true, 'message' => 'Destination created successfully']);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    // UPDATE DESTINATION
+    public function update_destination(Request $request, $id)
     {
-        //
+        $dest = Destination::where('place', $request->place)->get();
+
+        if(count($dest) > 0){
+            return response()->json(['success' => false, 'message' => 'Destination is already exist']);
+        }
+
+        $store = Destination::where('id', $request->id)
+                            ->update([
+                                'place' => $request->place
+                            ]);
+        if($store){
+            return response()->json(['success' => true, 'message' => 'Destination edited successfully']);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Destination  $destination
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Destination $destination)
+    // DELETE DESTINATION
+    public function delete_destination($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Destination  $destination
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Destination $destination)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Destination  $destination
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Destination $destination)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Destination  $destination
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Destination $destination)
-    {
-        //
+        $seats = SeatStatus::where('dest_id', $id)
+                            ->get();
+        if(count($seats) > 0){
+            return response()->json(['success' => false, 'message' => 'Destination cannot be deleted, please ask the adminstrator']);
+        }
+        Destination::where('id', $id)->delete();
+        return response()->json(['success' => true, 'message' => 'Destination removed successfully']);
     }
 }

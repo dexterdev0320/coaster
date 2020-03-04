@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EmployeeStatus extends Model
 {
+    protected $table = 'employees_status';
     protected $guarded = [];
 
     public function employee()

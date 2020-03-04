@@ -13,7 +13,7 @@ class CreateEmployeeStatusesTable extends Migration
      */
     public function up()
     {
-        Schema::create('employee_statuses', function (Blueprint $table) {
+        Schema::create('employees_status', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('emp_id');
             $table->foreign('emp_id')->references('id')->on('employees');
@@ -30,6 +30,6 @@ class CreateEmployeeStatusesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('employee_statuses');
+        Schema::dropIfExists('employees_status');
     }
 }

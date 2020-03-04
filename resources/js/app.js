@@ -1,11 +1,19 @@
+import VueRouter from 'vue-router'
 
-require('./bootstrap');
-
+// Vue.use(require('vue-moment'));
 window.Vue = require('vue');
 window.axios = require('axios');
-Vue.component('main-component', require('./components/Main.vue').default);
+
+
+Vue.use(VueRouter);
+require('./bootstrap');
+
+Vue.component('main-upd', require('./components/MainComponent.vue').default);
+Vue.component('destination', require('./components/Destination/DestinationComponent.vue').default);
+Vue.component('syncdavao', require('./components/SyncDavao.vue').default);
+Vue.component('syncagusan', require('./components/SyncAgusan.vue').default);
 
 const app = new Vue({
     el: '#app',
-    
+    model: 'history'
 });

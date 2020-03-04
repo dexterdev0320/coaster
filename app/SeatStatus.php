@@ -8,6 +8,8 @@ class SeatStatus extends Model
 {
     protected $guarded = [];
 
+    protected $table = 'seat_status';
+
     public function getStatusAttribute($attribute)
     {
         if($attribute == 0){

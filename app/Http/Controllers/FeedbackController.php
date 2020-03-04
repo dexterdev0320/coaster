@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Feedback;
+use App\Employee;
 use Illuminate\Http\Request;
 
 class FeedbackController extends Controller
@@ -10,7 +11,7 @@ class FeedbackController extends Controller
     public function index()
     {
         $feedbacks = Feedback::all();
-        // dd($feedbacks);
+
         return view('feedback.index', compact('feedbacks'));
     }
 
@@ -21,7 +22,19 @@ class FeedbackController extends Controller
 
     public function store(Request $request)
     {
-        //
+        $employee = Employee::where('emp_id', $request->emp_id)->first();
+        if($employee){
+            $feedback = Feedback::create([
+                'employee_id' => $employee->id,
+                'feedback' => $request->comment,
+            ]);
+
+            if($feedback){
+                return response()->json(['success' => true, 'message' => 'Feedback send successfully']);
+            }
+        }
+
+        return response()->json(['success' => false, 'message' => 'The Employee ID you have entered does not exist']);
     }
 
     public function show(Feedback $feedback)

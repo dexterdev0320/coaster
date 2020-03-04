@@ -15,24 +15,41 @@ class CreateSeatStatusesTable extends Migration
      */
     public function up()
     {
-        Schema::create('seat_statuses', function (Blueprint $table) {
+        Schema::create('seat_status', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->bigInteger('seat_no');
             $table->unsignedBigInteger('emp_id')->nullable();
             $table->foreign('emp_id')->references('id')->on('employees');
             $table->string('code')->nullable();
             $table->unsignedBigInteger('dest_id')->nullable();
             $table->foreign('dest_id')->references('id')->on('destinations');
             $table->integer('status')->default('1');
+            $table->string('day');
             $table->timestamps();
         });
 
         $seats = 40;
         for ($i=1; $i <= $seats; $i++) { 
-            DB::table('seat_statuses')->insert(
+            DB::table('seat_status')->insert(
                 array(
+                    'seat_no' => $i,
                     'status' => 1,
                     'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
+                    'updated_at' => Carbon::now(),
+                    'day' => 'Saturday'
+                )
+            );
+        }
+
+        $seats = 40;
+        for ($i=1; $i <= $seats; $i++) { 
+            DB::table('seat_status')->insert(
+                array(
+                    'seat_no' => $i,
+                    'status' => 1,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                    'day' => 'Monday'
                 )
             );
         }
@@ -45,6 +62,6 @@ class CreateSeatStatusesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('seat_statuses');
+        Schema::dropIfExists('seat_status');
     }
 }
