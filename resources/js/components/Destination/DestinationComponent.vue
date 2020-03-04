@@ -19,11 +19,13 @@
                             <tr v-for="dest in destinations" :key="dest.id">
                                 <td>
                                     <input type="text" v-if="dest.id == selected" v-model="dest_value" class="form-control" placeholder="Type the new Destination here...">
+                                    <span v-if="editDestinationError.destination && dest.id == selected" class="text-danger">{{ editDestinationError.destination[0] }}</span>
                                     <label for="place" v-bind="{hidden: dest.id == selected}">{{ dest.place }}</label>
                                 </td>
                                 <td>
-                                    <button v-if="btn_save == true && dest.id == selected" class="btn btn-success btn-sm" @click="saveDestination(dest.id, dest_value)">Save</button>
-                                    <button v-else class="btn btn-primary btn-sm" @click="editDestination(dest.id, dest.place)">Edit</button> 
+                                    <button v-if="dest.id != selected" class="btn btn-primary btn-sm" @click="editDestination(dest.id, dest.place); editDestinationError = []">Edit</button>
+                                    <button v-if="btn_save == true && dest.id == selected" class="btn btn-secondary btn-sm" @click="btn_save = false; selected = undefined; editDestinationError = []">Cancel</button> 
+                                    <button v-if="btn_save == true && dest.id == selected" class="btn btn-success btn-sm" @click="saveDestination(dest.id, dest_value)">Save</button> 
                                     <button class="btn btn-danger btn-sm" @click="deleteDestination(dest.id)">Delete</button>
                                 </td>
                             </tr>
@@ -38,7 +40,8 @@
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <input type="text" name="place" class="form-control" placeholder="Type Destination here..." v-model="new_dest">
+                            <input type="text" name="place" class="form-control" :class="{'is-invalid': destination_error.destination }" placeholder="Type Destination here..." v-model="new_dest">
+                            <span v-if="destination_error.destination" class="text-danger">{{destination_error.destination[0]}}</span>
                         </div>
                         <button type="submit" class="btn btn-primary" @click="addDestination(new_dest)">Submit</button>
                     </div>
@@ -62,6 +65,8 @@ export default {
             dest_value: '',
             selected: undefined,
             btn_save: false,
+            destination_error: [],
+            editDestinationError: [],
         }
     },
     methods: {
@@ -72,9 +77,10 @@ export default {
         },
         addDestination(destination){
             Axios.post('api/destination', {
-                place: this.new_dest
+                destination: this.new_dest
             })
                 .then(res => {
+                    this.destination_error = [];
                     if(res.data.success == false){
                         toastr.error(res.data.message);
                     }else{
@@ -83,7 +89,11 @@ export default {
                         this.new_dest = '';
                     }
                 })
-                .catch(err => console.log(err))
+                .catch(error => {
+                    if(error.response.status == 422){
+                        this.destination_error = error.response.data.errors;
+                    }
+                })
         },
         isConfirm(success){
             if(success){
@@ -128,25 +138,25 @@ export default {
             this.btn_save = true;
         },
         saveDestination(id, place){
-            if(this.dest_value != ''){
-                Axios.put('api/destination/' + id,{
-                id: id,
-                place: place
-                })
-                .then(res => {
-                    if(res.data.success == false){
-                        toastr.error(res.data.message)
-                    }else{
-                        this.selected = undefined;
-                        this.btn_save = false;
-                        this.fetchDestinationAPI();
-                        toastr.success(res.data.message)
-                    }
-                })
-                .catch(err => console.log(err));
-            }else{
-                toastr.error('New Destination is blank');
-            }
+            Axios.put('api/destination/' + id,{
+            id: id,
+            destination: place
+            })
+            .then(res => {
+                if(res.data.success == false){
+                    toastr.error(res.data.message)
+                }else{
+                    this.selected = undefined;
+                    this.btn_save = false;
+                    this.fetchDestinationAPI();
+                    toastr.success(res.data.message)
+                }
+            })
+            .catch(err => {
+                if(err.response.status == 422){
+                    this.editDestinationError = err.response.data.errors;
+                }
+            });
         }
     }
 }

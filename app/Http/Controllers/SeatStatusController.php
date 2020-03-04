@@ -23,6 +23,7 @@ class SeatStatusController extends Controller
     }
     public function monday(){
         $seats = SeatStatus::where('day', 'Monday')
+                            ->where('status', 0)
                             ->get();
         
         if($seats){
@@ -32,6 +33,7 @@ class SeatStatusController extends Controller
 
     public function saturday(){
         $seats = SeatStatus::where('day', 'Saturday')
+                            ->where('status', 0)
                             ->get();
 
         if($seats){

@@ -27,11 +27,17 @@
         <div v-if="page === 'Feedback'" class="row mt-3">
             <div class="col-lg-12">
                 <div><label for="comment">We would like to hear your feedback, inquiries and comments</label></div>
-            <div><textarea name="comment" class="form-control" :class="{'is-invalid': comment_success == true}" placeholder="Comment here..." v-model="feedback.comment" cols="30" rows="10"></textarea></div>
+            <div>
+                <textarea name="comment" class="form-control" :class="{'is-invalid': feedback_error.comment}" v-model="feedback.comment" placeholder="Comment here..." cols="30" rows="10"></textarea>
+                <span v-if="feedback_error.comment" class="text-danger">{{feedback_error.comment[0]}}</span>
+            </div>
             </div>
             <div class="col-lg-12 mt-3">
                 <div><label for="id">Employee's ID</label></div>
-                <div><input type="text" class="form-control" :class="{'is-invalid': feedback_res.success === false}" v-model="feedback.emp_id" placeholder="Type your ID here"></div>
+                <div>
+                    <input type="text" class="form-control" :class="{'is-invalid': feedback_error.emp_id}" v-model="feedback.empID" placeholder="Type your ID here">
+                    <span v-if="feedback_error.emp_id" class="text-danger">{{feedback_error.emp_id[0]}}</span>
+                </div>
             </div>
             <div class="col-lg-12 mt-3">
                 <div><button class="btn btn-primary" @click="submitFeedback">Submit</button></div>
@@ -51,7 +57,8 @@
                             <label v-else for="date"><i class="fa fa-calendar"></i> Date {{ moment(monday.date, "YYYY-MM-DD").format("LL") }}</label>	
                         </div>
                         <div class="p-3">
-                            <label for="time"><i class="fa fa-history"></i> 12:30 PM</label>
+                            <label v-if="page=='Saturday'" for="time"><i class="fa fa-history"></i> 12:30 PM</label>
+                            <label v-else><i class="fa fa-history"></i> 04:00 AM</label>
                         </div>  
                         <div class="p-3">
                             <label v-if="page=='Saturday'" for="dest" class="text-danger"><i class="fa fa-tags"></i> Agusan to Davao</label>
@@ -126,15 +133,26 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-2 d-flex justify-content-center align-items-center"><h3>Seat no: {{ seatno }}</h3></div>
+                                    <div class="col-2 d-flex justify-content-center align-items-center">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <h3>Seat no: {{ seatno }}</h3>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <span v-if="employee_error.seat_no" class="text-danger">Please select seats</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div class="col-5">
-                                        <input type="text" name="name" class="form-control" :class="{'is-invalid': employee_invalid == true}" v-model="employee" placeholder="Type Employee's ID">
+                                        <input type="text" name="name" class="form-control" v-model="employee" placeholder="Type Employee's ID">
+                                        <span v-if="employee_error.emp_id" class="text-danger">{{ employee_error.emp_id[0] }}</span>
                                     </div>
                                     <div class="col-3">
                                         <select class="custom-select" id="inputGroupSelect01" name="destination"  v-model="destid"> 
-                                            <option selected disabled>Choose Destination</option>
+                                            <option disabled value="" selected>Choose Destination</option>
                                             <option v-for="dest in destinations" :key="dest.id" :value="dest.id">{{dest.place}}</option>
                                         </select>
+                                        <span v-if="employee_error.dest_id" class="text-danger">The destination field is required</span>
                                     </div>
                                     <div class="col-2">
                                         <!-- Button trigger modal -->
@@ -224,6 +242,7 @@ export default {
             seat_no: '',
             employee: '',
             employees: {},
+            employee_error: [],
             employee_invalid: false,
             confirm_details: false,
             empid: '',
@@ -237,9 +256,8 @@ export default {
             updateseat: {},
             schedules: [],
             interval: undefined,
-            feedback: { comment: '', emp_id: ''},
-            feedback_res: { success: true, message: ''},
-            comment_success: false,
+            feedback_error: [],
+            feedback: { comment: '', empID: ''},
             moment: moment,
             saturday: [],
             monday: [],
@@ -281,14 +299,17 @@ export default {
                     this.confirm_details = res.success;
                     this.employees = res.data;
                     this.destination = this.destinations.find(e => e.id == this.destid);
-                    console.log(this.destination);
                 }else{
-                    console.log(this.search_employee);
+                    this.employee_error = [];
                     this.confirm_details = res.success;
                     toastr.error(this.search_employee.message);
                 }
             })
-            .catch(err => console.log(err))
+            .catch(error => {
+                if(error.response.status == 422){
+                    this.employee_error = error.response.data.errors
+                }
+            })
         },
         fetchDestinationAPI(){
             Axios.get('api/destinations')
@@ -412,34 +433,31 @@ export default {
                 this.destid = '';
                 this.seat_code = '';
                 this.employee = '';
-                // RUN IF DAY TODAY IS WEDNESDAY WITH THE TIME OF 6:00 AM
-                // RUN ENDS IF DAY TODAY IS SATURDAY WITH THE TIME OF 6:00 PM
-                if(moment().day(3).hours(6) <= moment() && moment().day(6).hours(18) >= moment()){
-                    this.fetchSeatsAPI(component);
-                }
+                this.employee_error = [];
+                this.feedback_error = [];
             }
         },
         submitFeedback(){
-            if(this.feedback.comment == ''){
-                this.comment_success = true;
-            }else{
-                Axios.post('api/feedback/store', {
+            Axios.post('api/feedback/store', {
                     comment: this.feedback.comment,
-                    emp_id: this.feedback.emp_id
+                    emp_id: this.feedback.empID
                 })
                     .then(res => {
                         if(res.data.success){
+                            this.feedback_error = [];
                             this.feedback.comment = '';
-                            this.feedback.emp_id = '';
-                            this.feedback_res.success = true;
+                            this.feedback.empID = '';
                             toastr.success(res.data.message);
                         }else{
-                            this.feedback_res = res.data;
-                            console.log(this.feedback_res);
+                            this.feedback_error = [];
                             toastr.error(res.data.message);
                         }
+                    })
+                    .catch(error => {
+                        if(error.response.status == 422){
+                            this.feedback_error = error.response.data.errors;
+                        }
                     });
-            }
         }
     }
     

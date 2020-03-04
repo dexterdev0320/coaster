@@ -1960,6 +1960,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
@@ -1971,7 +1974,9 @@ __webpack_require__.r(__webpack_exports__);
       new_dest: '',
       dest_value: '',
       selected: undefined,
-      btn_save: false
+      btn_save: false,
+      destination_error: [],
+      editDestinationError: []
     };
   },
   methods: {
@@ -1988,8 +1993,10 @@ __webpack_require__.r(__webpack_exports__);
       var _this3 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/destination', {
-        place: this.new_dest
+        destination: this.new_dest
       }).then(function (res) {
+        _this3.destination_error = [];
+
         if (res.data.success == false) {
           toastr.error(res.data.message);
         } else {
@@ -1998,8 +2005,10 @@ __webpack_require__.r(__webpack_exports__);
           toastr.success(res.data.message);
           _this3.new_dest = '';
         }
-      })["catch"](function (err) {
-        return console.log(err);
+      })["catch"](function (error) {
+        if (error.response.status == 422) {
+          _this3.destination_error = error.response.data.errors;
+        }
       });
     },
     isConfirm: function isConfirm(success) {
@@ -2048,27 +2057,25 @@ __webpack_require__.r(__webpack_exports__);
     saveDestination: function saveDestination(id, place) {
       var _this4 = this;
 
-      if (this.dest_value != '') {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.put('api/destination/' + id, {
-          id: id,
-          place: place
-        }).then(function (res) {
-          if (res.data.success == false) {
-            toastr.error(res.data.message);
-          } else {
-            _this4.selected = undefined;
-            _this4.btn_save = false;
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.put('api/destination/' + id, {
+        id: id,
+        destination: place
+      }).then(function (res) {
+        if (res.data.success == false) {
+          toastr.error(res.data.message);
+        } else {
+          _this4.selected = undefined;
+          _this4.btn_save = false;
 
-            _this4.fetchDestinationAPI();
+          _this4.fetchDestinationAPI();
 
-            toastr.success(res.data.message);
-          }
-        })["catch"](function (err) {
-          return console.log(err);
-        });
-      } else {
-        toastr.error('New Destination is blank');
-      }
+          toastr.success(res.data.message);
+        }
+      })["catch"](function (err) {
+        if (err.response.status == 422) {
+          _this4.editDestinationError = err.response.data.errors;
+        }
+      });
     }
   }
 });
@@ -2086,6 +2093,24 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2313,6 +2338,7 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       seat_no: '',
       employee: '',
       employees: {},
+      employee_error: [],
       employee_invalid: false,
       confirm_details: false,
       empid: '',
@@ -2326,15 +2352,11 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       updateseat: {},
       schedules: [],
       interval: undefined,
+      feedback_error: [],
       feedback: {
         comment: '',
-        emp_id: ''
+        empID: ''
       },
-      feedback_res: {
-        success: true,
-        message: ''
-      },
-      comment_success: false,
       moment: moment,
       saturday: [],
       monday: [],
@@ -2387,14 +2409,15 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
           _this3.destination = _this3.destinations.find(function (e) {
             return e.id == _this3.destid;
           });
-          console.log(_this3.destination);
         } else {
-          console.log(_this3.search_employee);
+          _this3.employee_error = [];
           _this3.confirm_details = res.success;
           toastr.error(_this3.search_employee.message);
         }
-      })["catch"](function (err) {
-        return console.log(err);
+      })["catch"](function (error) {
+        if (error.response.status == 422) {
+          _this3.employee_error = error.response.data.errors;
+        }
       });
     },
     fetchDestinationAPI: function fetchDestinationAPI() {
@@ -2534,36 +2557,32 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         this.empid = '';
         this.destid = '';
         this.seat_code = '';
-        this.employee = ''; // RUN IF DAY TODAY IS WEDNESDAY WITH THE TIME OF 6:00 AM
-        // RUN ENDS IF DAY TODAY IS SATURDAY WITH THE TIME OF 6:00 PM
-
-        if (moment().day(3).hours(6) <= moment() && moment().day(6).hours(18) >= moment()) {
-          this.fetchSeatsAPI(component);
-        }
+        this.employee = '';
+        this.employee_error = [];
+        this.feedback_error = [];
       }
     },
     submitFeedback: function submitFeedback() {
       var _this8 = this;
 
-      if (this.feedback.comment == '') {
-        this.comment_success = true;
-      } else {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/feedback/store', {
-          comment: this.feedback.comment,
-          emp_id: this.feedback.emp_id
-        }).then(function (res) {
-          if (res.data.success) {
-            _this8.feedback.comment = '';
-            _this8.feedback.emp_id = '';
-            _this8.feedback_res.success = true;
-            toastr.success(res.data.message);
-          } else {
-            _this8.feedback_res = res.data;
-            console.log(_this8.feedback_res);
-            toastr.error(res.data.message);
-          }
-        });
-      }
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/feedback/store', {
+        comment: this.feedback.comment,
+        emp_id: this.feedback.empID
+      }).then(function (res) {
+        if (res.data.success) {
+          _this8.feedback_error = [];
+          _this8.feedback.comment = '';
+          _this8.feedback.empID = '';
+          toastr.success(res.data.message);
+        } else {
+          _this8.feedback_error = [];
+          toastr.error(res.data.message);
+        }
+      })["catch"](function (error) {
+        if (error.response.status == 422) {
+          _this8.feedback_error = error.response.data.errors;
+        }
+      });
     }
   }
 });
@@ -62373,6 +62392,15 @@ var render = function() {
                           })
                         : _vm._e(),
                       _vm._v(" "),
+                      _vm.editDestinationError.destination &&
+                      dest.id == _vm.selected
+                        ? _c("span", { staticClass: "text-danger" }, [
+                            _vm._v(
+                              _vm._s(_vm.editDestinationError.destination[0])
+                            )
+                          ])
+                        : _vm._e(),
+                      _vm._v(" "),
                       _c(
                         "label",
                         _vm._b(
@@ -62386,6 +62414,39 @@ var render = function() {
                     ]),
                     _vm._v(" "),
                     _c("td", [
+                      dest.id != _vm.selected
+                        ? _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-primary btn-sm",
+                              on: {
+                                click: function($event) {
+                                  _vm.editDestination(dest.id, dest.place)
+                                  _vm.editDestinationError = []
+                                }
+                              }
+                            },
+                            [_vm._v("Edit")]
+                          )
+                        : _vm._e(),
+                      _vm._v(" "),
+                      _vm.btn_save == true && dest.id == _vm.selected
+                        ? _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-secondary btn-sm",
+                              on: {
+                                click: function($event) {
+                                  _vm.btn_save = false
+                                  _vm.selected = undefined
+                                  _vm.editDestinationError = []
+                                }
+                              }
+                            },
+                            [_vm._v("Cancel")]
+                          )
+                        : _vm._e(),
+                      _vm._v(" "),
                       _vm.btn_save == true && dest.id == _vm.selected
                         ? _c(
                             "button",
@@ -62402,21 +62463,7 @@ var render = function() {
                             },
                             [_vm._v("Save")]
                           )
-                        : _c(
-                            "button",
-                            {
-                              staticClass: "btn btn-primary btn-sm",
-                              on: {
-                                click: function($event) {
-                                  return _vm.editDestination(
-                                    dest.id,
-                                    dest.place
-                                  )
-                                }
-                              }
-                            },
-                            [_vm._v("Edit")]
-                          ),
+                        : _vm._e(),
                       _vm._v(" "),
                       _c(
                         "button",
@@ -62456,6 +62503,7 @@ var render = function() {
                   }
                 ],
                 staticClass: "form-control",
+                class: { "is-invalid": _vm.destination_error.destination },
                 attrs: {
                   type: "text",
                   name: "place",
@@ -62470,7 +62518,13 @@ var render = function() {
                     _vm.new_dest = $event.target.value
                   }
                 }
-              })
+              }),
+              _vm._v(" "),
+              _vm.destination_error.destination
+                ? _c("span", { staticClass: "text-danger" }, [
+                    _vm._v(_vm._s(_vm.destination_error.destination[0]))
+                  ])
+                : _vm._e()
             ]),
             _vm._v(" "),
             _c(
@@ -62649,7 +62703,7 @@ var render = function() {
                   }
                 ],
                 staticClass: "form-control",
-                class: { "is-invalid": _vm.comment_success == true },
+                class: { "is-invalid": _vm.feedback_error.comment },
                 attrs: {
                   name: "comment",
                   placeholder: "Comment here...",
@@ -62665,7 +62719,13 @@ var render = function() {
                     _vm.$set(_vm.feedback, "comment", $event.target.value)
                   }
                 }
-              })
+              }),
+              _vm._v(" "),
+              _vm.feedback_error.comment
+                ? _c("span", { staticClass: "text-danger" }, [
+                    _vm._v(_vm._s(_vm.feedback_error.comment[0]))
+                  ])
+                : _vm._e()
             ])
           ]),
           _vm._v(" "),
@@ -62678,23 +62738,29 @@ var render = function() {
                   {
                     name: "model",
                     rawName: "v-model",
-                    value: _vm.feedback.emp_id,
-                    expression: "feedback.emp_id"
+                    value: _vm.feedback.empID,
+                    expression: "feedback.empID"
                   }
                 ],
                 staticClass: "form-control",
-                class: { "is-invalid": _vm.feedback_res.success === false },
+                class: { "is-invalid": _vm.feedback_error.emp_id },
                 attrs: { type: "text", placeholder: "Type your ID here" },
-                domProps: { value: _vm.feedback.emp_id },
+                domProps: { value: _vm.feedback.empID },
                 on: {
                   input: function($event) {
                     if ($event.target.composing) {
                       return
                     }
-                    _vm.$set(_vm.feedback, "emp_id", $event.target.value)
+                    _vm.$set(_vm.feedback, "empID", $event.target.value)
                   }
                 }
-              })
+              }),
+              _vm._v(" "),
+              _vm.feedback_error.emp_id
+                ? _c("span", { staticClass: "text-danger" }, [
+                    _vm._v(_vm._s(_vm.feedback_error.emp_id[0]))
+                  ])
+                : _vm._e()
             ])
           ]),
           _vm._v(" "),
@@ -62754,7 +62820,17 @@ var render = function() {
                             ])
                       ]),
                       _vm._v(" "),
-                      _vm._m(3),
+                      _c("div", { staticClass: "p-3" }, [
+                        _vm.page == "Saturday"
+                          ? _c("label", { attrs: { for: "time" } }, [
+                              _c("i", { staticClass: "fa fa-history" }),
+                              _vm._v(" 12:30 PM")
+                            ])
+                          : _c("label", [
+                              _c("i", { staticClass: "fa fa-history" }),
+                              _vm._v(" 04:00 AM")
+                            ])
+                      ]),
                       _vm._v(" "),
                       _c("div", { staticClass: "p-3" }, [
                         _vm.page == "Saturday"
@@ -62782,13 +62858,13 @@ var render = function() {
                             )
                       ]),
                       _vm._v(" "),
-                      _vm._m(4)
+                      _vm._m(3)
                     ]
                   )
                 ]),
                 _vm._v(" "),
                 _c("div", { staticClass: "row justify-content-center mt-3" }, [
-                  _vm._m(5),
+                  _vm._m(4),
                   _vm._v(" "),
                   _c(
                     "div",
@@ -62973,8 +63049,22 @@ var render = function() {
                                 "col-2 d-flex justify-content-center align-items-center"
                             },
                             [
-                              _c("h3", [
-                                _vm._v("Seat no: " + _vm._s(_vm.seatno))
+                              _c("div", { staticClass: "row" }, [
+                                _c("div", { staticClass: "col-lg-12" }, [
+                                  _c("h3", [
+                                    _vm._v("Seat no: " + _vm._s(_vm.seatno))
+                                  ])
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-lg-12" }, [
+                                  _vm.employee_error.seat_no
+                                    ? _c(
+                                        "span",
+                                        { staticClass: "text-danger" },
+                                        [_vm._v("Please select seats")]
+                                      )
+                                    : _vm._e()
+                                ])
                               ])
                             ]
                           ),
@@ -62990,9 +63080,6 @@ var render = function() {
                                 }
                               ],
                               staticClass: "form-control",
-                              class: {
-                                "is-invalid": _vm.employee_invalid == true
-                              },
                               attrs: {
                                 type: "text",
                                 name: "name",
@@ -63007,7 +63094,13 @@ var render = function() {
                                   _vm.employee = $event.target.value
                                 }
                               }
-                            })
+                            }),
+                            _vm._v(" "),
+                            _vm.employee_error.emp_id
+                              ? _c("span", { staticClass: "text-danger" }, [
+                                  _vm._v(_vm._s(_vm.employee_error.emp_id[0]))
+                                ])
+                              : _vm._e()
                           ]),
                           _vm._v(" "),
                           _c("div", { staticClass: "col-3" }, [
@@ -63047,7 +63140,13 @@ var render = function() {
                               [
                                 _c(
                                   "option",
-                                  { attrs: { selected: "", disabled: "" } },
+                                  {
+                                    attrs: {
+                                      disabled: "",
+                                      value: "",
+                                      selected: ""
+                                    }
+                                  },
                                   [_vm._v("Choose Destination")]
                                 ),
                                 _vm._v(" "),
@@ -63063,7 +63162,13 @@ var render = function() {
                                 })
                               ],
                               2
-                            )
+                            ),
+                            _vm._v(" "),
+                            _vm.employee_error.dest_id
+                              ? _c("span", { staticClass: "text-danger" }, [
+                                  _vm._v("The destination field is required")
+                                ])
+                              : _vm._e()
                           ]),
                           _vm._v(" "),
                           _c("div", { staticClass: "col-2" }, [
@@ -63529,7 +63634,7 @@ var render = function() {
                       "row mt-5 d-flex justify-content-center text-center"
                   },
                   [
-                    _vm._m(6),
+                    _vm._m(5),
                     _vm._v(" "),
                     _c("div", { staticClass: "col-lg-12" }, [
                       _vm.moment().day(6) >= _vm.moment().day()
@@ -63584,17 +63689,6 @@ var staticRenderFns = [
       _c("label", { attrs: { for: "name" } }, [
         _c("i", { staticClass: "fa fa-user" }),
         _vm._v(" Dexter")
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "p-3" }, [
-      _c("label", { attrs: { for: "time" } }, [
-        _c("i", { staticClass: "fa fa-history" }),
-        _vm._v(" 12:30 PM")
       ])
     ])
   },
@@ -63793,7 +63887,7 @@ var render = function() {
           },
           on: { click: _vm.syncDavao }
         },
-        [_vm._v("\n            Sync Agusan\n        ")]
+        [_vm._v("\n            Sync Davao\n        ")]
       )
     ]),
     _vm._v(" "),

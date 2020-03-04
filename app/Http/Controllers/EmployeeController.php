@@ -132,6 +132,13 @@ class EmployeeController extends Controller
     // SEARCH EMPLOYEE
     public function search_employee(Request $request)
     {
+        $this->validate($request, [
+            'seat_no' => 'required',
+            'emp_id' => 'required',
+            'dest_id' => 'required',
+            'day' => 'required',
+        ]);
+        
         $seat = SeatStatus::where('seat_no', $request->seat_no)
                         ->where('day', $request->day)
                         ->first();

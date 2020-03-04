@@ -5,23 +5,24 @@ namespace App\Http\Controllers;
 use App\Feedback;
 use App\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Validator;
 
 class FeedbackController extends Controller
 {
     public function index()
     {
-        $feedbacks = Feedback::all();
+        $feedbacks = Feedback::orderBy('created_at', 'DESC')->get();
 
         return view('feedback.index', compact('feedbacks'));
     }
 
-    public function create()
-    {
-        //
-    }
-
     public function store(Request $request)
     {
+        $this->validate($request, [
+            'emp_id' => 'required',
+            'comment' => 'required',
+        ]);
+
         $employee = Employee::where('emp_id', $request->emp_id)->first();
         if($employee){
             $feedback = Feedback::create([
@@ -37,23 +38,4 @@ class FeedbackController extends Controller
         return response()->json(['success' => false, 'message' => 'The Employee ID you have entered does not exist']);
     }
 
-    public function show(Feedback $feedback)
-    {
-        //
-    }
-
-    public function edit(Feedback $feedback)
-    {
-        //
-    }
-
-    public function update(Request $request, Feedback $feedback)
-    {
-        //
-    }
-
-    public function destroy(Feedback $feedback)
-    {
-        //
-    }
 }

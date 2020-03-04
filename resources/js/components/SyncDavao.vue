@@ -2,7 +2,7 @@
     <div>
         <li class="nav-item">
             <a class="nav-link" href="#" style="color: black;" data-toggle="modal" data-target="#exampleModal" @click="syncDavao">
-                Sync Agusan
+                Sync Davao
             </a>
         </li>
         <!-- Modal -->

@@ -27,14 +27,18 @@ class DestinationController extends Controller
     // INSERT NEW DESTINATION
     public function new_destination(Request $request)
     {
-        $dest = Destination::where('place', 'LIKE', '%' . $request->place . '%')->get();
+        $this->validate($request, [
+            'destination' => 'required|min:3'
+        ]);
+        
+        $dest = Destination::where('place', 'LIKE', '%' . $request->destination . '%')->get();
 
         if(count($dest) > 0){
             return response()->json(['success' => false, 'message' => 'Destination is already created']);
         }
 
         $store = Destination::create([
-            'place' => $request->place,    
+            'place' => $request->destination,    
         ]);
 
         if($store){
@@ -45,7 +49,12 @@ class DestinationController extends Controller
     // UPDATE DESTINATION
     public function update_destination(Request $request, $id)
     {
-        $dest = Destination::where('place', $request->place)->get();
+        $this->validate($request,[
+            'id' => 'required',
+            'destination' => 'required|min:3'
+        ]);
+
+        $dest = Destination::where('place', $request->destination)->get();
 
         if(count($dest) > 0){
             return response()->json(['success' => false, 'message' => 'Destination is already exist']);
@@ -53,7 +62,7 @@ class DestinationController extends Controller
 
         $store = Destination::where('id', $request->id)
                             ->update([
-                                'place' => $request->place
+                                'place' => $request->destination
                             ]);
         if($store){
             return response()->json(['success' => true, 'message' => 'Destination edited successfully']);
