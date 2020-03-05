@@ -69,6 +69,8 @@ Route::group(['middleware' => ['auth']], function(){
 
         Route::match(['get', 'post'], 'blacklist', 'EmployeeStatusController@blacklist')->name('status.blacklist');
         Route::get('blacklist/{id}', 'EmployeeStatusController@remove_blacklist')->name('status.rmblacklist');
+
+        Route::post('add-visitor', 'EmployeeController@addvisitor')->name('employee.addVisitor');
     });
 
     Route::get('priority/{id}', 'EmployeeController@priority')->name('employee.priority');

@@ -25,22 +25,15 @@ class ScheduleController extends Controller
     
     public function latest_sched()
     {
-        $todayPlusTwo = date('Y-m-d', strtotime('2 days'));
-        $today = date('Y-m-d');
-        $schedules = Schedule::where('status', 1)
-                            ->limit(2)
-                            ->get();
-
-        $schedulesDecoded = json_decode($schedules);
+        // $sched = Schedule::where('date', '>', date('Y-m-d'))->first();
+        $sched = Schedule::where('day', 'Saturday')->first();
+        $saturday = date('Y-m-d', strtotime($sched->date));
+        $anyDay = date('Y-m-d', strtotime('1 day'));
         
-        $scheduleSaturdayIndex = array_search('Saturday', array_column($schedulesDecoded, 'day'), True);
-
-        $scheduleSaturday = $schedules[$scheduleSaturdayIndex];
-        
-        if($scheduleSaturday->date < $today){
-            DB::update('update schedules set status = 0 where status = ? and date <= ?', [1, $todayPlusTwo]);
+        if($saturday < date('Y-m-d')){
+            DB::update('update schedules set status = 0 where status = ? and date <= ?', [1, $anyDay]);
         }
-
+        
         $schedules = Schedule::where('status', 1)
                             ->limit(2)
                             ->get();

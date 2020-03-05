@@ -3,6 +3,13 @@
 @section('content')
 <div class="container">
     <div class="row">
+        <div class="col-lg-12">
+            @if (session('message'))
+                <div class="alert alert-success text-center">
+                    {{ session('message') }}
+                </div>
+            @endif
+        </div>
         <div class="col-lg-12 d-flex justify-content-between align-items-center">
             <div>
                 <h2>Employees</h2>
@@ -22,9 +29,56 @@
                             value="{{ old('name') }}">
                             <div class="input-group-append">
                             <button class="btn btn-outline-secondary">Submit</button>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                                Add Guest
+                              </button>
                             </div>
                         </div>
                 </form>
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel">Add Visitor</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{{ route('employee.addVisitor') }}" method="POST">
+                                @csrf
+                                <div>
+                                    <label for="name">Guest's Name</label>
+                                    <input type="text" name="name" 
+                                    class="form-control @error('name') is-invalid @enderror " 
+                                    placeholder="Name..." 
+                                    aria-label="Guest's name" 
+                                    aria-describedby="button-addon2"
+                                    value="{{ old('name') }}" required>
+                                    @error('name')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+                                <div class="mt-3">
+                                    <label for="expiration date">Access Expiration Date</label>
+                                    <input type="date" name="expiration_date" class="form-control @error('expiration_date') is-invalid @enderror" required>
+                                    @error('expiration_date')
+                                        <span class="invalid-feedback" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
             </div>
         </div>
     </div>

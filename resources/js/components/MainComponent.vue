@@ -79,8 +79,8 @@
                     <div class="col-lg-3 d-flex align-items-center">
                         <img src="image/ulo2.png" alt="">
                     </div>
-                    <div class="col-lg-5" style="border: 1px solid gray">
-                        <div class="row mt-3">
+                    <div class="col-lg-5 d-flex" style="border: 1px solid gray">
+                        <div class="row">
                             <div style="list-style-type: none; flex-wrap: wrap;" class="d-flex p-2 w-100">
                                 <div v-for="(seat, index) in seats" :key="seat.id">
                                     <!-- seatno = seat.id -->
@@ -116,10 +116,13 @@
                                         <button class="btn btn-outline-secondary" type="submit" id="button-addon2" @click="searchCode(seat_code)">Search</button>
                                         </div>
                                     </div>
-                                <div v-if="detail_visible === true">
+                                <transition name="fade">
+                                    <div v-if="detail_visible === true">
                                     <hr>
-                                    <h5>Seat No: {{ seat_no }}</h5>
-                                </div>
+                                    <h5 style="color: blue;">Seat No: {{ search_code[0].seat_no }} ({{ search_code[0].employee.emp_id }})</h5> 
+                                    <button class="btn btn-danger btn-sm" @click="cancelBooking(search_code[0])">Cancel Booking</button>
+                                    </div>
+                                </transition>
                             </div>
                         </div>
                     </div>
@@ -188,11 +191,16 @@
                                                                         <div class="col-lg-8"><strong>{{ seatno }}</strong></div>
                                                                         <div class="col-lg-4 text-right">Destination: </div>
                                                                         <div class="col-lg-8"><strong>{{ destination.place }}</strong></div>
+                                                                        <div class="col-lg-4 text-right">Code: </div>
+                                                                        <div class="col-lg-8"><strong class="text-danger">{{ employees.code }}</strong></div>
+                                                                        <div class="col-lg-4 text-right"></div>
+                                                                        <div class="col-lg-8"><strong class="text-info">Use this code to Inquire or Cancel your booking.</strong></div>
+                                                                        
                                                                     </div>
                                                                 </div>
                                                                 <div class="modal-footer">
                                                                     <button type="button" class="btn btn-secondary" @click="confirm_details = false">Cancel</button>
-                                                                    <button type="button" class="btn btn-primary" @click="updateSeat(destid, employees.id, destination.id)">Continue</button>
+                                                                    <button type="button" class="btn btn-primary" @click="updateSeat(destid, employees.id, destination.id, employees.code)">Continue</button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -242,6 +250,7 @@ export default {
             seat_no: '',
             employee: '',
             employees: {},
+            code: '',
             employee_error: [],
             employee_invalid: false,
             confirm_details: false,
@@ -262,6 +271,7 @@ export default {
             saturday: [],
             monday: [],
             search_employee: {},
+            search_code: [],
         }
     },
     mounted() {
@@ -374,14 +384,15 @@ export default {
                 this.selected = id;
             }
         },
-        updateSeat(seatid, empid, destid){
+        updateSeat(seatid, empid, destid, code){
             
                 Axios.put('api/seat', {
                         seat_id: seatid,
                         emp_id: empid,
                         dest_id: destid,
                         day: this.component,
-                        seat_no: this.seatno
+                        seat_no: this.seatno,
+                        code: code,
                     })
                     .then(res => {
                         if(res.data.success === false){
@@ -406,21 +417,61 @@ export default {
             if(this.seat_code === ''){
                 toastr.warning('Please insert seat code');
             }else{
-                for (let index = 0; index < total_seats; index++) {
-                    const seat = seats[index];
-                    if(seat.code != null){
-                        if(seat.code.toUpperCase() === code.toUpperCase()){
-                            this.seat_no = index+1;
-                            success = true;
-                            this.detail_visible = true;
-                            break;
-                        }
-                    }
+                this.search_code = seats.filter(seat => seat.code == code);
+                
+                if(this.search_code.length == 0){
+                    this.detail_visible = false;
+                    return toastr.error('Seat code does not exist');
                 }
-                if(success === false    ){
-                    toastr.error('Seat code does not exist');
-                }
+                this.detail_visible = true;
+                // for (let index = 0; index < total_seats; index++) {
+                //     const seat = seats[index];
+                //     if(seat.code != null){
+                //         if(seat.code.toUpperCase() === code.toUpperCase()){
+                //             this.seat_no = index+1;
+                //             success = true;
+                //             this.detail_visible = true;
+                //             break;
+                //         }
+                //     }
+                // }
             }
+        },
+
+        cancelBooking(details){
+            let _this = this;
+            swal({
+                title: "Are you sure you want to cancel your booking?",
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, cancel it!",
+                cancelButtonText: "No",
+                closeOnConfirm: false,
+                closeOnCancel: false
+                },
+                function(isConfirm) {
+                if (isConfirm) {
+                    Axios.post('api/seat/cancel-booking',{
+                        seatID: details.id
+                    })
+                    .then(res => {
+                        if(res.success == false){
+                            swal("Error!", res.message, "error");
+                        }else{
+                            _this.detail_visible = false;
+                            _this.seat_code = ''; 
+                            _this.fetchSeatsAPI(details.day); 
+                            swal("Success!", res.message, "success"); 
+                            
+                        }
+                    })
+                    .catch(err => console.log(err));
+                } else {
+                    swal("", "", "error");
+                }
+                });
         },
 
         callSeatsAPI(component){
@@ -434,8 +485,9 @@ export default {
                 this.seat_code = '';
                 this.employee = '';
                 this.employee_error = [];
-                this.feedback_error = [];
+                this.feedback_error = [];  
             }
+            this.fetchSeatsAPI(component);
         },
         submitFeedback(){
             Axios.post('api/feedback/store', {
@@ -494,5 +546,11 @@ export default {
     @keyframes fadein {
     from { opacity: 0; }
     to   { opacity: 1; }
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>

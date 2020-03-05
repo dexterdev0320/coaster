@@ -62,7 +62,7 @@
                                     <th scope="row">{{ $seat->seat_no }}</th>
                                     <td>{{ ($seat->emp_id) ? $seat->employee->emp_id : '' }}</td>
                                     <td>{{ ($seat->emp_id) ? $seat->employee->name : '' }}</td>
-                                    <td>{{ ($seat->emp_id) ? $seat->employee->department : '' }}</td>
+                                    <td>{{ ($seat->emp_id) ? $seat->employee->dept : '' }}</td>
                                     <td>{{ ($seat->dest_id) ? $seat->destination->place : '' }}</td>
                                     <td>{{ $seat->code }}</td>
                                     <td>{{ $seat->status }}</td>

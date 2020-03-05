@@ -22,7 +22,7 @@ class CreateEmployeesTable extends Migration
             $table->string('location')->nullable();
             $table->datetime('expiration_date')->nullable();
             $table->boolean('isactive')->nullable();
-            $table->string('syncFrom');
+            $table->string('syncFrom')->nullable();
             $table->timestamps();
         });
     }

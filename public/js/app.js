@@ -2318,6 +2318,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
@@ -2338,6 +2346,7 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       seat_no: '',
       employee: '',
       employees: {},
+      code: '',
       employee_error: [],
       employee_invalid: false,
       confirm_details: false,
@@ -2360,39 +2369,40 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       moment: moment,
       saturday: [],
       monday: [],
-      search_employee: {}
+      search_employee: {},
+      search_code: []
     };
   },
   mounted: function mounted() {
-    var _this = this;
+    var _this2 = this;
 
     this.fetchSchedulesAPI();
 
     if (moment().day(3).hours(6) <= moment() && moment().day(6).hours(18) >= moment()) {
       this.fetchSeatsAPI(this.component);
       setInterval(function () {
-        return _this.fetchSeatsAPI(_this.component);
+        return _this2.fetchSeatsAPI(_this2.component);
       }, 5000);
       this.fetchDestinationAPI();
     }
   },
   methods: {
     fetchSeatsAPI: function fetchSeatsAPI(component) {
-      var _this2 = this;
+      var _this3 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/seats', {
         day: component,
         refresh: this.refresh
       }).then(function (res) {
-        return _this2.seats = res.data.data;
+        return _this3.seats = res.data.data;
       }).then(function (data) {
-        _this2.seatsAvailable(_this2.seats);
+        _this3.seatsAvailable(_this3.seats);
       })["catch"](function (err) {
         return console.log(err);
       });
     },
     fetchEmployee: function fetchEmployee(seat_no, emp_id, dest_id, day) {
-      var _this3 = this;
+      var _this4 = this;
 
       this.employees = {};
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/employee', {
@@ -2401,44 +2411,44 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         dest_id: dest_id,
         day: day
       }).then(function (res) {
-        return _this3.search_employee = res.data;
+        return _this4.search_employee = res.data;
       }).then(function (res) {
-        if (_this3.search_employee.success == true) {
-          _this3.confirm_details = res.success;
-          _this3.employees = res.data;
-          _this3.destination = _this3.destinations.find(function (e) {
-            return e.id == _this3.destid;
+        if (_this4.search_employee.success == true) {
+          _this4.confirm_details = res.success;
+          _this4.employees = res.data;
+          _this4.destination = _this4.destinations.find(function (e) {
+            return e.id == _this4.destid;
           });
         } else {
-          _this3.employee_error = [];
-          _this3.confirm_details = res.success;
-          toastr.error(_this3.search_employee.message);
+          _this4.employee_error = [];
+          _this4.confirm_details = res.success;
+          toastr.error(_this4.search_employee.message);
         }
       })["catch"](function (error) {
         if (error.response.status == 422) {
-          _this3.employee_error = error.response.data.errors;
+          _this4.employee_error = error.response.data.errors;
         }
       });
     },
     fetchDestinationAPI: function fetchDestinationAPI() {
-      var _this4 = this;
+      var _this5 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('api/destinations').then(function (res) {
-        return _this4.destinations = res.data.data;
+        return _this5.destinations = res.data.data;
       })["catch"](function (err) {
         return console.log(err);
       });
     },
     fetchSchedulesAPI: function fetchSchedulesAPI() {
-      var _this5 = this;
+      var _this6 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.get('api/latest_sched').then(function (res) {
-        return _this5.schedules = res.data;
+        return _this6.schedules = res.data;
       }).then(function (res) {
-        _this5.saturday = _this5.schedules.find(function (e) {
+        _this6.saturday = _this6.schedules.find(function (e) {
           return e.day === 'Saturday';
         });
-        _this5.monday = _this5.schedules.find(function (e) {
+        _this6.monday = _this6.schedules.find(function (e) {
           return e.day === 'Monday';
         });
       })["catch"](function (err) {
@@ -2446,14 +2456,14 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       });
     },
     refreshAll: function refreshAll() {
-      var _this6 = this;
+      var _this7 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/refresh-all', {
         saturday: this.saturday,
         monday: this.monday
       }).then(function (res) {
         if (res.data.success == true) {
-          _this6.fetchSchedulesAPI();
+          _this7.fetchSchedulesAPI();
         }
       })["catch"](function (err) {
         return console.log(err);
@@ -2497,27 +2507,28 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         this.selected = id;
       }
     },
-    updateSeat: function updateSeat(seatid, empid, destid) {
-      var _this7 = this;
+    updateSeat: function updateSeat(seatid, empid, destid, code) {
+      var _this8 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.put('api/seat', {
         seat_id: seatid,
         emp_id: empid,
         dest_id: destid,
         day: this.component,
-        seat_no: this.seatno
+        seat_no: this.seatno,
+        code: code
       }).then(function (res) {
         if (res.data.success === false) {
           toastr.error(res.data.message);
         } else {
-          _this7.fetchSeatsAPI(_this7.component);
+          _this8.fetchSeatsAPI(_this8.component);
 
-          _this7.seatno = '';
-          _this7.empid = '';
-          _this7.destid = '';
-          _this7.selected = undefined;
-          _this7.employee = '';
-          _this7.confirm_details = false;
+          _this8.seatno = '';
+          _this8.empid = '';
+          _this8.destid = '';
+          _this8.selected = undefined;
+          _this8.employee = '';
+          _this8.confirm_details = false;
           toastr.success(res.data.message);
         }
       });
@@ -2530,23 +2541,63 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       if (this.seat_code === '') {
         toastr.warning('Please insert seat code');
       } else {
-        for (var index = 0; index < total_seats; index++) {
-          var seat = seats[index];
+        this.search_code = seats.filter(function (seat) {
+          return seat.code == code;
+        });
 
-          if (seat.code != null) {
-            if (seat.code.toUpperCase() === code.toUpperCase()) {
-              this.seat_no = index + 1;
-              success = true;
-              this.detail_visible = true;
-              break;
-            }
-          }
+        if (this.search_code.length == 0) {
+          this.detail_visible = false;
+          return toastr.error('Seat code does not exist');
         }
 
-        if (success === false) {
-          toastr.error('Seat code does not exist');
-        }
+        this.detail_visible = true; // for (let index = 0; index < total_seats; index++) {
+        //     const seat = seats[index];
+        //     if(seat.code != null){
+        //         if(seat.code.toUpperCase() === code.toUpperCase()){
+        //             this.seat_no = index+1;
+        //             success = true;
+        //             this.detail_visible = true;
+        //             break;
+        //         }
+        //     }
+        // }
       }
+    },
+    cancelBooking: function cancelBooking(details) {
+      var _this = this;
+
+      swal({
+        title: "Are you sure you want to cancel your booking?",
+        text: "",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonClass: "btn-danger",
+        confirmButtonText: "Yes, cancel it!",
+        cancelButtonText: "No",
+        closeOnConfirm: false,
+        closeOnCancel: false
+      }, function (isConfirm) {
+        if (isConfirm) {
+          axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/seat/cancel-booking', {
+            seatID: details.id
+          }).then(function (res) {
+            if (res.success == false) {
+              swal("Error!", res.message, "error");
+            } else {
+              _this.detail_visible = false;
+              _this.seat_code = '';
+
+              _this.fetchSeatsAPI(details.day);
+
+              swal("Success!", res.message, "success");
+            }
+          })["catch"](function (err) {
+            return console.log(err);
+          });
+        } else {
+          swal("", "", "error");
+        }
+      });
     },
     callSeatsAPI: function callSeatsAPI(component) {
       if (component != 'Feedback') {
@@ -2561,26 +2612,28 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         this.employee_error = [];
         this.feedback_error = [];
       }
+
+      this.fetchSeatsAPI(component);
     },
     submitFeedback: function submitFeedback() {
-      var _this8 = this;
+      var _this9 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/feedback/store', {
         comment: this.feedback.comment,
         emp_id: this.feedback.empID
       }).then(function (res) {
         if (res.data.success) {
-          _this8.feedback_error = [];
-          _this8.feedback.comment = '';
-          _this8.feedback.empID = '';
+          _this9.feedback_error = [];
+          _this9.feedback.comment = '';
+          _this9.feedback.empID = '';
           toastr.success(res.data.message);
         } else {
-          _this8.feedback_error = [];
+          _this9.feedback_error = [];
           toastr.error(res.data.message);
         }
       })["catch"](function (error) {
         if (error.response.status == 422) {
-          _this8.feedback_error = error.response.data.errors;
+          _this9.feedback_error = error.response.data.errors;
         }
       });
     }
@@ -2728,6 +2781,25 @@ __webpack_require__.r(__webpack_exports__);
     }
   }
 });
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Visitor/VisitorComponent.vue?vue&type=script&lang=js&":
+/*!***********************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Visitor/VisitorComponent.vue?vue&type=script&lang=js& ***!
+  \***********************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({});
 
 /***/ }),
 
@@ -8035,7 +8107,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\nli.highlight[data-v-3ee370e9]{\n        background-image: url(" + escape(__webpack_require__(/*! ../assets/selected_seat_img.gif */ "./resources/js/assets/selected_seat_img.gif")) + ") !important;\n}\n.seat_hover[data-v-3ee370e9]:hover{\n        background-color: yellow;\n}\n.service[data-v-3ee370e9]{\n        font-size: 7em;\n}\n.modal-mask[data-v-3ee370e9] {\n    position: fixed;\n    z-index: 9998;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, .5);\n    display: table;\n    -webkit-transition: opacity .3s ease;\n    transition: opacity .3s ease;\n    -webkit-animation: fadein-data-v-3ee370e9 0.3s;\n            animation: fadein-data-v-3ee370e9 0.3s;\n}\n.modal-wrapper[data-v-3ee370e9] {\n    display: table-cell;\n    vertical-align: middle;\n}\n@-webkit-keyframes fadein-data-v-3ee370e9 {\nfrom { opacity: 0;\n}\nto   { opacity: 1;\n}\n}\n@keyframes fadein-data-v-3ee370e9 {\nfrom { opacity: 0;\n}\nto   { opacity: 1;\n}\n}\n", ""]);
+exports.push([module.i, "\nli.highlight[data-v-3ee370e9]{\n        background-image: url(" + escape(__webpack_require__(/*! ../assets/selected_seat_img.gif */ "./resources/js/assets/selected_seat_img.gif")) + ") !important;\n}\n.seat_hover[data-v-3ee370e9]:hover{\n        background-color: yellow;\n}\n.service[data-v-3ee370e9]{\n        font-size: 7em;\n}\n.modal-mask[data-v-3ee370e9] {\n    position: fixed;\n    z-index: 9998;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background-color: rgba(0, 0, 0, .5);\n    display: table;\n    -webkit-transition: opacity .3s ease;\n    transition: opacity .3s ease;\n    -webkit-animation: fadein-data-v-3ee370e9 0.3s;\n            animation: fadein-data-v-3ee370e9 0.3s;\n}\n.modal-wrapper[data-v-3ee370e9] {\n    display: table-cell;\n    vertical-align: middle;\n}\n@-webkit-keyframes fadein-data-v-3ee370e9 {\nfrom { opacity: 0;\n}\nto   { opacity: 1;\n}\n}\n@keyframes fadein-data-v-3ee370e9 {\nfrom { opacity: 0;\n}\nto   { opacity: 1;\n}\n}\n.fade-enter-active[data-v-3ee370e9], .fade-leave-active[data-v-3ee370e9] {\n  -webkit-transition: opacity .5s;\n  transition: opacity .5s;\n}\n.fade-enter[data-v-3ee370e9], .fade-leave-to[data-v-3ee370e9] /* .fade-leave-active below version 2.1.8 */ {\n  opacity: 0;\n}\n", ""]);
 
 // exports
 
@@ -62869,11 +62941,11 @@ var render = function() {
                   _c(
                     "div",
                     {
-                      staticClass: "col-lg-5",
+                      staticClass: "col-lg-5 d-flex",
                       staticStyle: { border: "1px solid gray" }
                     },
                     [
-                      _c("div", { staticClass: "row mt-3" }, [
+                      _c("div", { staticClass: "row" }, [
                         _c(
                           "div",
                           {
@@ -62965,64 +63037,97 @@ var render = function() {
                     ]),
                     _vm._v(" "),
                     _c("div", { staticClass: "row p-3" }, [
-                      _c("div", { staticClass: "col-lg-12 alert alert-info" }, [
-                        _c("h3", [_vm._v("Inquire Booking:")]),
-                        _vm._v(" "),
-                        _c("div", { staticClass: "input-group mb-3" }, [
-                          _c("input", {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model",
-                                value: _vm.seat_code,
-                                expression: "seat_code"
-                              }
-                            ],
-                            staticClass: "form-control",
-                            attrs: {
-                              type: "text",
-                              name: "code",
-                              placeholder: "Enter Seat's code",
-                              "aria-label": "Recipient's username"
-                            },
-                            domProps: { value: _vm.seat_code },
-                            on: {
-                              input: function($event) {
-                                if ($event.target.composing) {
-                                  return
-                                }
-                                _vm.seat_code = $event.target.value
-                              }
-                            }
-                          }),
+                      _c(
+                        "div",
+                        { staticClass: "col-lg-12 alert alert-info" },
+                        [
+                          _c("h3", [_vm._v("Inquire Booking:")]),
                           _vm._v(" "),
-                          _c("div", { staticClass: "input-group-append" }, [
-                            _c(
-                              "button",
-                              {
-                                staticClass: "btn btn-outline-secondary",
-                                attrs: { type: "submit", id: "button-addon2" },
-                                on: {
-                                  click: function($event) {
-                                    return _vm.searchCode(_vm.seat_code)
-                                  }
+                          _c("div", { staticClass: "input-group mb-3" }, [
+                            _c("input", {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: _vm.seat_code,
+                                  expression: "seat_code"
                                 }
+                              ],
+                              staticClass: "form-control",
+                              attrs: {
+                                type: "text",
+                                name: "code",
+                                placeholder: "Enter Seat's code",
+                                "aria-label": "Recipient's username"
                               },
-                              [_vm._v("Search")]
-                            )
-                          ])
-                        ]),
-                        _vm._v(" "),
-                        _vm.detail_visible === true
-                          ? _c("div", [
-                              _c("hr"),
-                              _vm._v(" "),
-                              _c("h5", [
-                                _vm._v("Seat No: " + _vm._s(_vm.seat_no))
-                              ])
+                              domProps: { value: _vm.seat_code },
+                              on: {
+                                input: function($event) {
+                                  if ($event.target.composing) {
+                                    return
+                                  }
+                                  _vm.seat_code = $event.target.value
+                                }
+                              }
+                            }),
+                            _vm._v(" "),
+                            _c("div", { staticClass: "input-group-append" }, [
+                              _c(
+                                "button",
+                                {
+                                  staticClass: "btn btn-outline-secondary",
+                                  attrs: {
+                                    type: "submit",
+                                    id: "button-addon2"
+                                  },
+                                  on: {
+                                    click: function($event) {
+                                      return _vm.searchCode(_vm.seat_code)
+                                    }
+                                  }
+                                },
+                                [_vm._v("Search")]
+                              )
                             ])
-                          : _vm._e()
-                      ])
+                          ]),
+                          _vm._v(" "),
+                          _c("transition", { attrs: { name: "fade" } }, [
+                            _vm.detail_visible === true
+                              ? _c("div", [
+                                  _c("hr"),
+                                  _vm._v(" "),
+                                  _c("h5", { staticStyle: { color: "blue" } }, [
+                                    _vm._v(
+                                      "Seat No: " +
+                                        _vm._s(_vm.search_code[0].seat_no) +
+                                        " (" +
+                                        _vm._s(
+                                          _vm.search_code[0].employee.emp_id
+                                        ) +
+                                        ")"
+                                    )
+                                  ]),
+                                  _vm._v(" "),
+                                  _c(
+                                    "button",
+                                    {
+                                      staticClass: "btn btn-danger btn-sm",
+                                      on: {
+                                        click: function($event) {
+                                          return _vm.cancelBooking(
+                                            _vm.search_code[0]
+                                          )
+                                        }
+                                      }
+                                    },
+                                    [_vm._v("Cancel Booking")]
+                                  )
+                                ])
+                              : _vm._e()
+                          ])
+                        ],
+                        1
+                      )
                     ])
                   ])
                 ]),
@@ -63541,6 +63646,72 @@ var render = function() {
                                                                       ]
                                                                     )
                                                                   ]
+                                                                ),
+                                                                _vm._v(" "),
+                                                                _c(
+                                                                  "div",
+                                                                  {
+                                                                    staticClass:
+                                                                      "col-lg-4 text-right"
+                                                                  },
+                                                                  [
+                                                                    _vm._v(
+                                                                      "Code: "
+                                                                    )
+                                                                  ]
+                                                                ),
+                                                                _vm._v(" "),
+                                                                _c(
+                                                                  "div",
+                                                                  {
+                                                                    staticClass:
+                                                                      "col-lg-8"
+                                                                  },
+                                                                  [
+                                                                    _c(
+                                                                      "strong",
+                                                                      {
+                                                                        staticClass:
+                                                                          "text-danger"
+                                                                      },
+                                                                      [
+                                                                        _vm._v(
+                                                                          _vm._s(
+                                                                            _vm
+                                                                              .employees
+                                                                              .code
+                                                                          )
+                                                                        )
+                                                                      ]
+                                                                    )
+                                                                  ]
+                                                                ),
+                                                                _vm._v(" "),
+                                                                _c("div", {
+                                                                  staticClass:
+                                                                    "col-lg-4 text-right"
+                                                                }),
+                                                                _vm._v(" "),
+                                                                _c(
+                                                                  "div",
+                                                                  {
+                                                                    staticClass:
+                                                                      "col-lg-8"
+                                                                  },
+                                                                  [
+                                                                    _c(
+                                                                      "strong",
+                                                                      {
+                                                                        staticClass:
+                                                                          "text-info"
+                                                                      },
+                                                                      [
+                                                                        _vm._v(
+                                                                          "Use this code to Inquire or Cancel your booking."
+                                                                        )
+                                                                      ]
+                                                                    )
+                                                                  ]
                                                                 )
                                                               ]
                                                             )
@@ -63592,7 +63763,10 @@ var render = function() {
                                                                         .id,
                                                                       _vm
                                                                         .destination
-                                                                        .id
+                                                                        .id,
+                                                                      _vm
+                                                                        .employees
+                                                                        .code
                                                                     )
                                                                   }
                                                                 }
@@ -63973,6 +64147,30 @@ var staticRenderFns = [
     ])
   }
 ]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Visitor/VisitorComponent.vue?vue&type=template&id=24d8473b&":
+/*!***************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/Visitor/VisitorComponent.vue?vue&type=template&id=24d8473b& ***!
+  \***************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("button", [_vm._v("Add Visitor")])
+}
+var staticRenderFns = []
 render._withStripped = true
 
 
@@ -82740,6 +82938,7 @@ Vue.component('main-upd', __webpack_require__(/*! ./components/MainComponent.vue
 Vue.component('destination', __webpack_require__(/*! ./components/Destination/DestinationComponent.vue */ "./resources/js/components/Destination/DestinationComponent.vue")["default"]);
 Vue.component('syncdavao', __webpack_require__(/*! ./components/SyncDavao.vue */ "./resources/js/components/SyncDavao.vue")["default"]);
 Vue.component('syncagusan', __webpack_require__(/*! ./components/SyncAgusan.vue */ "./resources/js/components/SyncAgusan.vue")["default"]);
+Vue.component('addvisitor', __webpack_require__(/*! ./components/Visitor/VisitorComponent.vue */ "./resources/js/components/Visitor/VisitorComponent.vue")["default"]);
 var app = new Vue({
   el: '#app',
   model: 'history'
@@ -83092,6 +83291,75 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_SyncDavao_vue_vue_type_template_id_34a25fd1___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_SyncDavao_vue_vue_type_template_id_34a25fd1___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/components/Visitor/VisitorComponent.vue":
+/*!**************************************************************!*\
+  !*** ./resources/js/components/Visitor/VisitorComponent.vue ***!
+  \**************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _VisitorComponent_vue_vue_type_template_id_24d8473b___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./VisitorComponent.vue?vue&type=template&id=24d8473b& */ "./resources/js/components/Visitor/VisitorComponent.vue?vue&type=template&id=24d8473b&");
+/* harmony import */ var _VisitorComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./VisitorComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/Visitor/VisitorComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _VisitorComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _VisitorComponent_vue_vue_type_template_id_24d8473b___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _VisitorComponent_vue_vue_type_template_id_24d8473b___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/Visitor/VisitorComponent.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/Visitor/VisitorComponent.vue?vue&type=script&lang=js&":
+/*!***************************************************************************************!*\
+  !*** ./resources/js/components/Visitor/VisitorComponent.vue?vue&type=script&lang=js& ***!
+  \***************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_VisitorComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./VisitorComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Visitor/VisitorComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_VisitorComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/Visitor/VisitorComponent.vue?vue&type=template&id=24d8473b&":
+/*!*********************************************************************************************!*\
+  !*** ./resources/js/components/Visitor/VisitorComponent.vue?vue&type=template&id=24d8473b& ***!
+  \*********************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_VisitorComponent_vue_vue_type_template_id_24d8473b___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./VisitorComponent.vue?vue&type=template&id=24d8473b& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/Visitor/VisitorComponent.vue?vue&type=template&id=24d8473b&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_VisitorComponent_vue_vue_type_template_id_24d8473b___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_VisitorComponent_vue_vue_type_template_id_24d8473b___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 

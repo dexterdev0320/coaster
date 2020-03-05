@@ -106,6 +106,42 @@ class EmployeeController extends Controller
         
     }
 
+    public function addvisitor(Request $request)
+    {
+        $validation = Validator::make($request->all(),[
+            'name' => 'required|min:3',
+            'expiration_date' => 'required|date'
+        ]);
+
+        if($validation->fails()){
+            return back()->withErrors($validation);
+        }
+
+        $visitorID = Employee::where('emp_id', 'NOT LIKE', '%PMC%')->orderBy('created_at', 'DESC')->first();
+
+        if(!isset($visitorID)){
+            $addVisitor = Employee::create([
+                'emp_id' => 1,
+                'name' => $request->name,
+                'expiration_date' => $request->expiration_date,
+                'isactive' => 1
+            ]);
+        }
+
+        if(isset($addVisitor)){
+            return redirect('employees')->with(['message' => 'Visitor added successfully']);
+        }
+
+        $addVisitor = Employee::create([
+            'emp_id' => $visitorID->emp_id + 1,
+            'name' => $request->name,
+            'expiration_date' => $request->expiration_date,
+            'isactive' => 1
+        ]);
+        
+        return redirect('employees')->with(['message' => 'Visitor added successfully']);
+    }
+
     // API STARTS HERE
     public function test()
     {
@@ -147,7 +183,7 @@ class EmployeeController extends Controller
             return response()->json(['success' => false, 'message' => "We couldn't find the seat, please select another seat. Thanks"]);
         }
 
-        $employees = Employee::where('emp_id', 'LIKE', '%' . $request->emp_id)->where('isactive', 1);
+        $employees = Employee::where('emp_id', $request->emp_id)->where('isactive', 1);
         $count_employees = count($employees->get());
 
         if($count_employees > 1){
@@ -160,6 +196,14 @@ class EmployeeController extends Controller
 
         if($count_employees == 1){
             $employee = $employees->first();
+        }
+
+        if($employee->expiration_date != null && $employee->expiration_date <= date('Y-m-d')){
+            $employeeInActive = Employee::where('id', $employee->id)->update(['isactive' => 0]);
+        }
+
+        if(isset($employeeInActive)){
+            return response()->json(['success' => false, 'message' => "The Employee is not Active"]);
         }
 
         $seat_check = SeatStatus::where('emp_id', $employee->id)
@@ -200,7 +244,9 @@ class EmployeeController extends Controller
         if(!isset($destination)){
             return response()->json(['success' => false, 'message' => "Please select Destination"]);
         }
-        
+
+        $code = strtoupper(Str::random(5));
+        $employee = $employee->setAttribute('code', $code);
         return response()->json(['success' => true, 'message' => "Please check the details", 'data' => $employee]);
         
     }

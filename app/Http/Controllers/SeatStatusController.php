@@ -21,8 +21,12 @@ class SeatStatusController extends Controller
     {
         return view('booking.index');
     }
-    public function monday(){
-        $seats = SeatStatus::where('day', 'Monday')
+
+    public function monday()
+    {
+        $seats = SeatStatus::with('employee')
+                            ->with('destination')
+                            ->where('day', 'Monday')
                             ->where('status', 0)
                             ->get();
         
@@ -31,11 +35,13 @@ class SeatStatusController extends Controller
         }
     }
 
-    public function saturday(){
-        $seats = SeatStatus::where('day', 'Saturday')
+    public function saturday()
+    {
+        $seats = SeatStatus::with('employee')
+                            ->with('destination')
+                            ->where('day', 'Saturday')
                             ->where('status', 0)
                             ->get();
-
         if($seats){
             return view('seat.index', compact('seats'));
         }
@@ -180,9 +186,10 @@ class SeatStatusController extends Controller
     }
 
     
-    public function seats(Request $request){
+    public function seats(Request $request)
+    {
         $sched = Schedule::where('status', 0)->orderBy('date', 'DESC')->first();
-        
+
         SeatStatus::where('status', 0)
         ->where(DB::raw("CONVERT(date, updated_at, 110)"), '<=', $sched->date)
         ->update([
@@ -192,21 +199,21 @@ class SeatStatusController extends Controller
             'status' => 1
         ]);
 
-        $seats = SeatStatus::where('day', 'like', '%'.$request->day.'%')->get();
-
+        $seats = SeatStatus::with('employee')->where('day', 'like', '%'.$request->day.'%')->get();
+        // return response()->json($seats);
         if(count($seats) != 0){
 
             return SeatResource::collection($seats);
         }
 
-        $total_seats = 40;
-        for ($i=1; $i <= $total_seats; $i++) { 
-            SeatStatus::create([
-                'seat_no' => $i,
-                'status' => 1,
-                'day' => $request->day,
-            ]);
-        }
+        // $total_seats = 40;
+        // for ($i=1; $i <= $total_seats; $i++) { 
+        //     SeatStatus::create([
+        //         'seat_no' => $i,
+        //         'status' => 1,
+        //         'day' => $request->day,
+        //     ]);
+        // }
         
         return SeatResource::collection($seats);
 
@@ -214,6 +221,7 @@ class SeatStatusController extends Controller
     
     public function update(Request $request, SeatStatus $seatStatus)
     {
+        // dd($request->all());
         $seat = SeatStatus::where('seat_no', $request->seat_no)
                         ->where('status', 1)
                         ->where('day', $request->day)
@@ -228,12 +236,12 @@ class SeatStatusController extends Controller
             if($check_employee){
                 return response()->json(['success'=>false, 'message'=> 'Employee already have a seat']);
             }
-            $code = Str::random(5);
+            // dd($request->code);
             $upd_seat = SeatStatus::where('seat_no', $request->seat_no)
                                     ->where('day', $request->day)
                                     ->update([
                                             'emp_id' => $request->emp_id,
-                                            'code' => $code,
+                                            'code' => $request->code,
                                             'dest_id' => $request->dest_id,
                                             'status' => 0,
                                         ]);
@@ -256,7 +264,7 @@ class SeatStatusController extends Controller
                                 'status' => 'Booked',
                             ]);
                             if($log){
-                                return response()->json(['success' => true, 'message' => "HOVER ME! Booked successfully. Use this Code: ".$code." to inquire Booking."]);
+                                return response()->json(['success' => true, 'message' => "Success! Your booking was confirmed"]);
                             }
                         }
                     }
@@ -266,5 +274,19 @@ class SeatStatusController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'Seat is already booked']);
+    }
+
+    public function cancelBooking(Request $request)
+    {
+        $updateSeat = SeatStatus::where('id', $request->seatID)->update([
+            'emp_id' => null,
+            'code' => null,
+            'dest_id' => null,
+            'status' => 1
+        ]);
+
+        if($updateSeat){
+            return response()->json(['success' => true, 'message' => "Cancel Booking successfully!"]);
+        }
     }
 }

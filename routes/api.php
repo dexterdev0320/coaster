@@ -7,7 +7,7 @@
 Route::post('employee', 'EmployeeController@search_employee');
 
 Route::post('seats', 'SeatStatusController@seats');
-
+Route::post('seat/cancel-booking', 'SeatStatusController@cancelBooking');
 Route::put('seat', 'SeatStatusController@update');
 
 Route::post('refresh-all', 'SeatStatusController@refresh_all');
