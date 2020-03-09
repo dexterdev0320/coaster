@@ -116,7 +116,12 @@ class EmployeeController extends Controller
         if($validation->fails()){
             return back()->withErrors($validation);
         }
+        
+        $expDate = date('Y-m-d', strtotime($request->expiration_date));
 
+        if($expDate < date('Y-m-d')){
+            return redirect('employees')->with(['success' => false, 'message' => 'Failed to add visitor. The Expiration Date is below the date today']);
+        }
         $visitorID = Employee::where('emp_id', 'NOT LIKE', '%PMC%')->orderBy('created_at', 'DESC')->first();
 
         if(!isset($visitorID)){
@@ -129,7 +134,7 @@ class EmployeeController extends Controller
         }
 
         if(isset($addVisitor)){
-            return redirect('employees')->with(['message' => 'Visitor added successfully']);
+            return redirect('employees')->with(['success' => true, 'message' => 'Visitor added successfully']);
         }
 
         $addVisitor = Employee::create([
@@ -139,7 +144,7 @@ class EmployeeController extends Controller
             'isactive' => 1
         ]);
         
-        return redirect('employees')->with(['message' => 'Visitor added successfully']);
+        return redirect('employees')->with(['success' => true, 'message' => 'Visitor added successfully']);
     }
 
     // API STARTS HERE

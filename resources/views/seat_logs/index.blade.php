@@ -45,7 +45,7 @@
         <div class="col-md-12">
             <nav aria-label="Page navigation example">
                 <ul class="pagination justify-content-center">
-                  {{-- {{ $employees->links() }} --}}
+                  {{ $logs->links() }}
                 </ul>
             </nav>
         </div>

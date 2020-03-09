@@ -7,19 +7,25 @@
                         <a 
                         class="nav-link"
                         v-bind:class="{'bg-primary':page === 'Saturday', 'text-white':page === 'Saturday'}"
-                        v-on:click="page = 'Saturday'; component = 'Saturday';callSeatsAPI(component)" href="#">Saturday ({{ moment(saturday.date, "YYYY-MM-DD").format("LL") }})</a>
+                        v-on:click="page = 'Saturday'; component = 'Saturday';callSeatsAPI(component)"
+                        style="cursor: pointer"
+                        >Saturday ({{ moment(saturday.date, "YYYY-MM-DD").format("LL") }})</a>
                     </li>
                     <li class="nav-item">
                         <a 
                         class="nav-link" 
                         :class="{'bg-primary':page === 'Monday', 'text-white':page === 'Monday'}"
                         v-on:click="page = 'Monday'; component = 'Monday';callSeatsAPI(component)" 
-                        href="#">Monday ({{ moment(monday.date, "YYYY-MM-DD").format("LL") }})</a>
+                        style="cursor: pointer"
+                        >Monday ({{ moment(monday.date, "YYYY-MM-DD").format("LL") }})</a>
                     </li>
                     <li class="nav-item">
                     <a 
                     :class="{'bg-primary':page === 'Feedback', 'text-white':page === 'Feedback'}"
-                    class="nav-link" v-on:click="page = 'Feedback';callSeatsAPI(page)" href="#">Feedback Form</a>
+                    class="nav-link" v-on:click="page = 'Feedback';callSeatsAPI(page)"
+                    style="cursor: pointer"
+                    >Feedback Form
+                    </a>
                     </li>
                 </ul>
             </div>
@@ -46,23 +52,23 @@
         <div v-else>
             <!-- RUN IF DAY TODAY IS WEDNESDAY WITH THE TIME OF 6:00 AM
                 RUN ENDS IF DAY TODAY IS SATURDAY WITH THE TIME OF 6:00 PM -->
-            <div v-if="moment().day(3).hours(6) <= moment() && moment().day(6).hours(18) >= moment()">
-                <div class="row">
+            <div v-if="moment().day(1).hours(0) <= moment() && moment().day(6).hours(18) >= moment()">
+                <div class="row text-danger">
                     <div class="col-lg-12 d-flex align-items-center">
                         <div class="p-3">
-                            <label for="name"><i class="fa fa-user"></i> Dexter</label>
+                            <label for="name"><i class="fa fa-user"></i>Driver</label>
                         </div>
                         <div class="p-3">
-                            <label v-if="page=='Saturday'" for="date"><i class="fa fa-calendar"></i> Date {{ moment(saturday.date, "YYYY-MM-DD").format("LL") }}</label>
-                            <label v-else for="date"><i class="fa fa-calendar"></i> Date {{ moment(monday.date, "YYYY-MM-DD").format("LL") }}</label>	
+                            <label v-if="page=='Saturday'" for="date"><i class="fas fa-calendar-alt"></i> Date {{ moment(saturday.date, "YYYY-MM-DD").format("LL") }} (Sat)</label>
+                            <label v-else for="date"><i class="fas fa-calendar-alt"></i> Date {{ moment(monday.date, "YYYY-MM-DD").format("LL") }} (Mon)</label>	
                         </div>
                         <div class="p-3">
                             <label v-if="page=='Saturday'" for="time"><i class="fa fa-history"></i> 12:30 PM</label>
                             <label v-else><i class="fa fa-history"></i> 04:00 AM</label>
                         </div>  
                         <div class="p-3">
-                            <label v-if="page=='Saturday'" for="dest" class="text-danger"><i class="fa fa-tags"></i> Agusan to Davao</label>
-                            <label v-else for="dest" class="text-danger"><i class="fa fa-tags"></i> Davao to Agusan</label>
+                            <label v-if="page=='Saturday'" for="dest"><i class="fa fa-tags"></i> Agusan to Davao</label>
+                            <label v-else for="dest"><i class="fa fa-tags"></i> Davao to Agusan</label>
                         </div>
                         <div class="p-3 ml-5">
                             <label for="legend">LEGEND: </label>
@@ -81,11 +87,11 @@
                     </div>
                     <div class="col-lg-5 d-flex" style="border: 1px solid gray">
                         <div class="row">
-                            <div style="list-style-type: none; flex-wrap: wrap;" class="d-flex p-2 w-100">
+                            <div style="list-style-type: none; flex-wrap: wrap;" class="d-flex justify-content-center p-2 w-100">
                                 <div v-for="(seat, index) in seats" :key="seat.id">
                                     <!-- seatno = seat.id -->
                                     <li :class="{highlight:seat.id == selected}" class="m-2 seat_hover"  @click="seatStatus(seat.id, seat.status, seat.seat_no)"
-                                        style="background-repeat: no-repeat; width: 40px;height: 40px;"
+                                        style="background-repeat: no-repeat; width: 40px;height: 40px; cursor: pointer"
                                         :style="{'background-image': 'url('+imageSelected(seat.status, seat.id, index)+')'}"
                                         
                                         >
@@ -110,7 +116,10 @@
                             <div class="col-lg-12 alert alert-info">
                                 <h3>Inquire Booking:</h3>
                                     <div class="input-group mb-3">
-                                        <input type="text" name="code" class="form-control" placeholder="Enter Seat's code" aria-label="Recipient's username" v-model="seat_code">
+                                        <input type="text" name="code" class="form-control" 
+                                        placeholder="Enter Seat's code" aria-label="Recipient's username" 
+                                        v-model="seat_code"
+                                        @keypress.enter="searchCode(seat_code)">
                                         
                                         <div class="input-group-append">
                                         <button class="btn btn-outline-secondary" type="submit" id="button-addon2" @click="searchCode(seat_code)">Search</button>
@@ -152,7 +161,7 @@
                                     </div>
                                     <div class="col-3">
                                         <select class="custom-select" id="inputGroupSelect01" name="destination"  v-model="destid"> 
-                                            <option disabled value="" selected>Choose Destination</option>
+                                            <option disabled value="" selected>Choose Location</option>
                                             <option v-for="dest in destinations" :key="dest.id" :value="dest.id">{{dest.place}}</option>
                                         </select>
                                         <span v-if="employee_error.dest_id" class="text-danger">The destination field is required</span>
@@ -276,7 +285,7 @@ export default {
     },
     mounted() {
         this.fetchSchedulesAPI();
-        if(moment().day(3).hours(6) <= moment() && moment().day(6).hours(18) >= moment()){
+        if(moment().day(1).hours(6) <= moment() && moment().day(6).hours(18) >= moment()){
             this.fetchSeatsAPI(this.component); 
             setInterval(() => this.fetchSeatsAPI(this.component), 5000)
             this.fetchDestinationAPI();
@@ -405,6 +414,7 @@ export default {
                             this.selected = undefined;
                             this.employee = '';
                             this.confirm_details = false;
+                            // this.search_employee = {}; TO BE CONTINUE
                             toastr.success(res.data.message);
                         }
                     });

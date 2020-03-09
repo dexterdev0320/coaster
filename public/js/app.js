@@ -1963,6 +1963,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
@@ -2326,6 +2328,15 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js");
@@ -2378,7 +2389,7 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
 
     this.fetchSchedulesAPI();
 
-    if (moment().day(3).hours(6) <= moment() && moment().day(6).hours(18) >= moment()) {
+    if (moment().day(1).hours(6) <= moment() && moment().day(6).hours(18) >= moment()) {
       this.fetchSeatsAPI(this.component);
       setInterval(function () {
         return _this2.fetchSeatsAPI(_this2.component);
@@ -2528,7 +2539,8 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
           _this8.destid = '';
           _this8.selected = undefined;
           _this8.employee = '';
-          _this8.confirm_details = false;
+          _this8.confirm_details = false; // this.search_employee = {}; TO BE CONTINUE
+
           toastr.success(res.data.message);
         }
       });
@@ -2691,7 +2703,8 @@ __webpack_require__.r(__webpack_exports__);
     return {
       modal: false,
       loading: false,
-      message: ''
+      message: '',
+      sync_response: {}
     };
   },
   components: {
@@ -2704,8 +2717,15 @@ __webpack_require__.r(__webpack_exports__);
       this.modal = true;
       this.loading = true;
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/sync/agusan').then(function (res) {
-        _this.loading = false;
-        _this.message = res.data.message;
+        return _this.sync_response = res.data;
+      }).then(function (res) {
+        if (res.success === false) {
+          _this.loading = false;
+          _this.message = res.message;
+        } else {
+          _this.loading = false;
+          _this.message = _this.sync_response.message;
+        }
       });
     }
   }
@@ -2762,7 +2782,8 @@ __webpack_require__.r(__webpack_exports__);
     return {
       modal: false,
       loading: false,
-      message: ''
+      message: '',
+      sync_response: {}
     };
   },
   components: {
@@ -2775,8 +2796,15 @@ __webpack_require__.r(__webpack_exports__);
       this.modal = true;
       this.loading = true;
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/sync/davao').then(function (res) {
-        _this.loading = false;
-        _this.message = res.data.message;
+        return _this.sync_response = res.data;
+      }).then(function (res) {
+        if (res.success === false) {
+          _this.loading = false;
+          _this.message = res.message;
+        } else {
+          _this.loading = false;
+          _this.message = _this.sync_response.message;
+        }
       });
     }
   }
@@ -62415,148 +62443,155 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "container" }, [
-    _vm._m(0),
-    _vm._v(" "),
     _c("div", { staticClass: "row" }, [
       _c("div", { staticClass: "col-lg-8" }, [
-        _c(
-          "div",
-          {
-            attrs: {
-              "data-spy": "scroll",
-              "data-target": "#navbar-example2",
-              "data-offset": "0"
-            }
-          },
-          [
-            _c("table", { staticClass: "table table-bordered table-hover" }, [
-              _vm._m(1),
-              _vm._v(" "),
-              _c(
-                "tbody",
-                _vm._l(_vm.destinations, function(dest) {
-                  return _c("tr", { key: dest.id }, [
-                    _c("td", [
-                      dest.id == _vm.selected
-                        ? _c("input", {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model",
-                                value: _vm.dest_value,
-                                expression: "dest_value"
-                              }
-                            ],
-                            staticClass: "form-control",
-                            attrs: {
-                              type: "text",
-                              placeholder: "Type the new Destination here..."
-                            },
-                            domProps: { value: _vm.dest_value },
-                            on: {
-                              input: function($event) {
-                                if ($event.target.composing) {
-                                  return
+        _c("div", { staticClass: "card" }, [
+          _vm._m(0),
+          _vm._v(" "),
+          _c("div", { staticClass: "card-body" }, [
+            _c(
+              "div",
+              {
+                attrs: {
+                  "data-spy": "scroll",
+                  "data-target": "#navbar-example2",
+                  "data-offset": "0"
+                }
+              },
+              [
+                _c("table", { staticClass: "table table-hover" }, [
+                  _vm._m(1),
+                  _vm._v(" "),
+                  _c(
+                    "tbody",
+                    _vm._l(_vm.destinations, function(dest) {
+                      return _c("tr", { key: dest.id }, [
+                        _c("td", [
+                          dest.id == _vm.selected
+                            ? _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.dest_value,
+                                    expression: "dest_value"
+                                  }
+                                ],
+                                staticClass: "form-control",
+                                attrs: {
+                                  type: "text",
+                                  placeholder:
+                                    "Type the new Destination here..."
+                                },
+                                domProps: { value: _vm.dest_value },
+                                on: {
+                                  input: function($event) {
+                                    if ($event.target.composing) {
+                                      return
+                                    }
+                                    _vm.dest_value = $event.target.value
+                                  }
                                 }
-                                _vm.dest_value = $event.target.value
-                              }
-                            }
-                          })
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.editDestinationError.destination &&
-                      dest.id == _vm.selected
-                        ? _c("span", { staticClass: "text-danger" }, [
-                            _vm._v(
-                              _vm._s(_vm.editDestinationError.destination[0])
-                            )
-                          ])
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _c(
-                        "label",
-                        _vm._b(
-                          { attrs: { for: "place" } },
-                          "label",
-                          { hidden: dest.id == _vm.selected },
-                          false
-                        ),
-                        [_vm._v(_vm._s(dest.place))]
-                      )
-                    ]),
-                    _vm._v(" "),
-                    _c("td", [
-                      dest.id != _vm.selected
-                        ? _c(
-                            "button",
-                            {
-                              staticClass: "btn btn-primary btn-sm",
-                              on: {
-                                click: function($event) {
-                                  _vm.editDestination(dest.id, dest.place)
-                                  _vm.editDestinationError = []
-                                }
-                              }
-                            },
-                            [_vm._v("Edit")]
-                          )
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.btn_save == true && dest.id == _vm.selected
-                        ? _c(
-                            "button",
-                            {
-                              staticClass: "btn btn-secondary btn-sm",
-                              on: {
-                                click: function($event) {
-                                  _vm.btn_save = false
-                                  _vm.selected = undefined
-                                  _vm.editDestinationError = []
-                                }
-                              }
-                            },
-                            [_vm._v("Cancel")]
-                          )
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _vm.btn_save == true && dest.id == _vm.selected
-                        ? _c(
-                            "button",
-                            {
-                              staticClass: "btn btn-success btn-sm",
-                              on: {
-                                click: function($event) {
-                                  return _vm.saveDestination(
-                                    dest.id,
-                                    _vm.dest_value
+                              })
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _vm.editDestinationError.destination &&
+                          dest.id == _vm.selected
+                            ? _c("span", { staticClass: "text-danger" }, [
+                                _vm._v(
+                                  _vm._s(
+                                    _vm.editDestinationError.destination[0]
                                   )
+                                )
+                              ])
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _c(
+                            "label",
+                            _vm._b(
+                              { attrs: { for: "place" } },
+                              "label",
+                              { hidden: dest.id == _vm.selected },
+                              false
+                            ),
+                            [_vm._v(_vm._s(dest.place))]
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("td", [
+                          dest.id != _vm.selected
+                            ? _c(
+                                "button",
+                                {
+                                  staticClass: "btn btn-primary btn-sm",
+                                  on: {
+                                    click: function($event) {
+                                      _vm.editDestination(dest.id, dest.place)
+                                      _vm.editDestinationError = []
+                                    }
+                                  }
+                                },
+                                [_vm._v("Edit")]
+                              )
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _vm.btn_save == true && dest.id == _vm.selected
+                            ? _c(
+                                "button",
+                                {
+                                  staticClass: "btn btn-secondary btn-sm",
+                                  on: {
+                                    click: function($event) {
+                                      _vm.btn_save = false
+                                      _vm.selected = undefined
+                                      _vm.editDestinationError = []
+                                    }
+                                  }
+                                },
+                                [_vm._v("Cancel")]
+                              )
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _vm.btn_save == true && dest.id == _vm.selected
+                            ? _c(
+                                "button",
+                                {
+                                  staticClass: "btn btn-success btn-sm",
+                                  on: {
+                                    click: function($event) {
+                                      return _vm.saveDestination(
+                                        dest.id,
+                                        _vm.dest_value
+                                      )
+                                    }
+                                  }
+                                },
+                                [_vm._v("Save")]
+                              )
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-danger btn-sm",
+                              on: {
+                                click: function($event) {
+                                  return _vm.deleteDestination(dest.id)
                                 }
                               }
                             },
-                            [_vm._v("Save")]
+                            [_vm._v("Delete")]
                           )
-                        : _vm._e(),
-                      _vm._v(" "),
-                      _c(
-                        "button",
-                        {
-                          staticClass: "btn btn-danger btn-sm",
-                          on: {
-                            click: function($event) {
-                              return _vm.deleteDestination(dest.id)
-                            }
-                          }
-                        },
-                        [_vm._v("Delete")]
-                      )
-                    ])
-                  ])
-                }),
-                0
-              )
-            ])
-          ]
-        )
+                        ])
+                      ])
+                    }),
+                    0
+                  )
+                ])
+              ]
+            )
+          ])
+        ])
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "col-lg-4" }, [
@@ -62623,10 +62658,8 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row" }, [
-      _c("div", { staticClass: "col-lg-12" }, [
-        _c("h2", [_vm._v("Destination")])
-      ])
+    return _c("div", { staticClass: "card-header" }, [
+      _c("h3", [_vm._v("Destinations")])
     ])
   },
   function() {
@@ -62635,7 +62668,7 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("thead", [
       _c("tr", [
-        _c("th", [_vm._v("Destination")]),
+        _c("th", [_vm._v("Destination's Name")]),
         _vm._v(" "),
         _c("th", [_vm._v("Action")])
       ])
@@ -62646,7 +62679,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "card-header" }, [
-      _c("h3", [_vm._v("Create Destination")])
+      _c("h3", [_vm._v("Add Destination")])
     ])
   }
 ]
@@ -62684,7 +62717,7 @@ var render = function() {
                   "bg-primary": _vm.page === "Saturday",
                   "text-white": _vm.page === "Saturday"
                 },
-                attrs: { href: "#" },
+                staticStyle: { cursor: "pointer" },
                 on: {
                   click: function($event) {
                     _vm.page = "Saturday"
@@ -62714,7 +62747,7 @@ var render = function() {
                   "bg-primary": _vm.page === "Monday",
                   "text-white": _vm.page === "Monday"
                 },
-                attrs: { href: "#" },
+                staticStyle: { cursor: "pointer" },
                 on: {
                   click: function($event) {
                     _vm.page = "Monday"
@@ -62744,7 +62777,7 @@ var render = function() {
                   "bg-primary": _vm.page === "Feedback",
                   "text-white": _vm.page === "Feedback"
                 },
-                attrs: { href: "#" },
+                staticStyle: { cursor: "pointer" },
                 on: {
                   click: function($event) {
                     _vm.page = "Feedback"
@@ -62752,7 +62785,7 @@ var render = function() {
                   }
                 }
               },
-              [_vm._v("Feedback Form")]
+              [_vm._v("Feedback Form\n                ")]
             )
           ])
         ])
@@ -62852,14 +62885,14 @@ var render = function() {
       : _c("div", [
           _vm
             .moment()
-            .day(3)
-            .hours(6) <= _vm.moment() &&
+            .day(1)
+            .hours(0) <= _vm.moment() &&
           _vm
             .moment()
             .day(6)
             .hours(18) >= _vm.moment()
             ? _c("div", [
-                _c("div", { staticClass: "row" }, [
+                _c("div", { staticClass: "row text-danger" }, [
                   _c(
                     "div",
                     { staticClass: "col-lg-12 d-flex align-items-center" },
@@ -62869,25 +62902,27 @@ var render = function() {
                       _c("div", { staticClass: "p-3" }, [
                         _vm.page == "Saturday"
                           ? _c("label", { attrs: { for: "date" } }, [
-                              _c("i", { staticClass: "fa fa-calendar" }),
+                              _c("i", { staticClass: "fas fa-calendar-alt" }),
                               _vm._v(
                                 " Date " +
                                   _vm._s(
                                     _vm
                                       .moment(_vm.saturday.date, "YYYY-MM-DD")
                                       .format("LL")
-                                  )
+                                  ) +
+                                  " (Sat)"
                               )
                             ])
                           : _c("label", { attrs: { for: "date" } }, [
-                              _c("i", { staticClass: "fa fa-calendar" }),
+                              _c("i", { staticClass: "fas fa-calendar-alt" }),
                               _vm._v(
                                 " Date " +
                                   _vm._s(
                                     _vm
                                       .moment(_vm.monday.date, "YYYY-MM-DD")
                                       .format("LL")
-                                  )
+                                  ) +
+                                  " (Mon)"
                               )
                             ])
                       ]),
@@ -62906,28 +62941,14 @@ var render = function() {
                       _vm._v(" "),
                       _c("div", { staticClass: "p-3" }, [
                         _vm.page == "Saturday"
-                          ? _c(
-                              "label",
-                              {
-                                staticClass: "text-danger",
-                                attrs: { for: "dest" }
-                              },
-                              [
-                                _c("i", { staticClass: "fa fa-tags" }),
-                                _vm._v(" Agusan to Davao")
-                              ]
-                            )
-                          : _c(
-                              "label",
-                              {
-                                staticClass: "text-danger",
-                                attrs: { for: "dest" }
-                              },
-                              [
-                                _c("i", { staticClass: "fa fa-tags" }),
-                                _vm._v(" Davao to Agusan")
-                              ]
-                            )
+                          ? _c("label", { attrs: { for: "dest" } }, [
+                              _c("i", { staticClass: "fa fa-tags" }),
+                              _vm._v(" Agusan to Davao")
+                            ])
+                          : _c("label", { attrs: { for: "dest" } }, [
+                              _c("i", { staticClass: "fa fa-tags" }),
+                              _vm._v(" Davao to Agusan")
+                            ])
                       ]),
                       _vm._v(" "),
                       _vm._m(3)
@@ -62949,7 +62970,8 @@ var render = function() {
                         _c(
                           "div",
                           {
-                            staticClass: "d-flex p-2 w-100",
+                            staticClass:
+                              "d-flex justify-content-center p-2 w-100",
                             staticStyle: {
                               "list-style-type": "none",
                               "flex-wrap": "wrap"
@@ -62965,7 +62987,8 @@ var render = function() {
                                   staticStyle: {
                                     "background-repeat": "no-repeat",
                                     width: "40px",
-                                    height: "40px"
+                                    height: "40px",
+                                    cursor: "pointer"
                                   },
                                   style: {
                                     "background-image":
@@ -63062,6 +63085,21 @@ var render = function() {
                               },
                               domProps: { value: _vm.seat_code },
                               on: {
+                                keypress: function($event) {
+                                  if (
+                                    !$event.type.indexOf("key") &&
+                                    _vm._k(
+                                      $event.keyCode,
+                                      "enter",
+                                      13,
+                                      $event.key,
+                                      "Enter"
+                                    )
+                                  ) {
+                                    return null
+                                  }
+                                  return _vm.searchCode(_vm.seat_code)
+                                },
                                 input: function($event) {
                                   if ($event.target.composing) {
                                     return
@@ -63252,7 +63290,7 @@ var render = function() {
                                       selected: ""
                                     }
                                   },
-                                  [_vm._v("Choose Destination")]
+                                  [_vm._v("Choose Location")]
                                 ),
                                 _vm._v(" "),
                                 _vm._l(_vm.destinations, function(dest) {
@@ -63862,7 +63900,7 @@ var staticRenderFns = [
     return _c("div", { staticClass: "p-3" }, [
       _c("label", { attrs: { for: "name" } }, [
         _c("i", { staticClass: "fa fa-user" }),
-        _vm._v(" Dexter")
+        _vm._v("Driver")
       ])
     ])
   },
@@ -63978,15 +64016,25 @@ var render = function() {
                             }
                           })
                         : _c("div", [
-                            _c("h1", { staticClass: "text-success" }, [
-                              _vm._v(_vm._s(_vm.message))
-                            ]),
+                            _c(
+                              "h1",
+                              {
+                                class: [
+                                  _vm.sync_response.success === false
+                                    ? "text-danger"
+                                    : "text-success"
+                                ]
+                              },
+                              [_vm._v(_vm._s(_vm.message))]
+                            ),
                             _vm._v(" "),
-                            _c("h5", { staticClass: "text-info" }, [
-                              _vm._v(
-                                " You will be redirected to employees list!"
-                              )
-                            ])
+                            _vm.sync_response.success
+                              ? _c("h5", { staticClass: "text-info" }, [
+                                  _vm._v(
+                                    " You will be redirected to employees list!"
+                                  )
+                                ])
+                              : _vm._e()
                           ])
                     ],
                     1
@@ -64099,15 +64147,25 @@ var render = function() {
                             }
                           })
                         : _c("div", [
-                            _c("h1", { staticClass: "text-success" }, [
-                              _vm._v(_vm._s(_vm.message))
-                            ]),
+                            _c(
+                              "h1",
+                              {
+                                class: [
+                                  _vm.sync_response.success === false
+                                    ? "text-danger"
+                                    : "text-success"
+                                ]
+                              },
+                              [_vm._v(_vm._s(_vm.message))]
+                            ),
                             _vm._v(" "),
-                            _c("h5", { staticClass: "text-info" }, [
-                              _vm._v(
-                                " You will be redirected to employees list!"
-                              )
-                            ])
+                            _vm.sync_response.success
+                              ? _c("h5", { staticClass: "text-info" }, [
+                                  _vm._v(
+                                    " You will be redirected to employees list!"
+                                  )
+                                ])
+                              : _vm._e()
                           ])
                     ],
                     1

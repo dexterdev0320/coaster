@@ -188,10 +188,10 @@ class SeatStatusController extends Controller
     
     public function seats(Request $request)
     {
-        $sched = Schedule::where('status', 0)->orderBy('date', 'DESC')->first();
-
+        $sched = Schedule::where('day', 'Monday')->where('status', 0)->orderBy('date', 'DESC')->first();
+        
         SeatStatus::where('status', 0)
-        ->where(DB::raw("CONVERT(date, updated_at, 110)"), '<=', $sched->date)
+        ->where(DB::raw("CONVERT(date, updated_at, 110)"), '<', $sched->date)
         ->update([
             'emp_id' => null,
             'code' => null,

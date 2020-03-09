@@ -1,42 +1,44 @@
 <template>
     <div class="container">
         <div class="row">
-            <div class="col-lg-12">
-                <h2>Destination</h2>
-            </div>
-        </div>
-        <div class="row">
             <div class="col-lg-8">
-                <div data-spy="scroll" data-target="#navbar-example2" data-offset="0">
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>Destination</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="dest in destinations" :key="dest.id">
-                                <td>
-                                    <input type="text" v-if="dest.id == selected" v-model="dest_value" class="form-control" placeholder="Type the new Destination here...">
-                                    <span v-if="editDestinationError.destination && dest.id == selected" class="text-danger">{{ editDestinationError.destination[0] }}</span>
-                                    <label for="place" v-bind="{hidden: dest.id == selected}">{{ dest.place }}</label>
-                                </td>
-                                <td>
-                                    <button v-if="dest.id != selected" class="btn btn-primary btn-sm" @click="editDestination(dest.id, dest.place); editDestinationError = []">Edit</button>
-                                    <button v-if="btn_save == true && dest.id == selected" class="btn btn-secondary btn-sm" @click="btn_save = false; selected = undefined; editDestinationError = []">Cancel</button> 
-                                    <button v-if="btn_save == true && dest.id == selected" class="btn btn-success btn-sm" @click="saveDestination(dest.id, dest_value)">Save</button> 
-                                    <button class="btn btn-danger btn-sm" @click="deleteDestination(dest.id)">Delete</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Destinations</h3>
+                    </div>
+                    <div class="card-body">
+                        <div data-spy="scroll" data-target="#navbar-example2" data-offset="0">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Destination's Name</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="dest in destinations" :key="dest.id">
+                                    <td>
+                                        <input type="text" v-if="dest.id == selected" v-model="dest_value" class="form-control" placeholder="Type the new Destination here...">
+                                        <span v-if="editDestinationError.destination && dest.id == selected" class="text-danger">{{ editDestinationError.destination[0] }}</span>
+                                        <label for="place" v-bind="{hidden: dest.id == selected}">{{ dest.place }}</label>
+                                    </td>
+                                    <td>
+                                        <button v-if="dest.id != selected" class="btn btn-primary btn-sm" @click="editDestination(dest.id, dest.place); editDestinationError = []">Edit</button>
+                                        <button v-if="btn_save == true && dest.id == selected" class="btn btn-secondary btn-sm" @click="btn_save = false; selected = undefined; editDestinationError = []">Cancel</button> 
+                                        <button v-if="btn_save == true && dest.id == selected" class="btn btn-success btn-sm" @click="saveDestination(dest.id, dest_value)">Save</button> 
+                                        <button class="btn btn-danger btn-sm" @click="deleteDestination(dest.id)">Delete</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Create Destination</h3>
+                        <h3>Add Destination</h3>
                     </div>
                     <div class="card-body">
                         <div class="form-group">

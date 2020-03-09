@@ -11,8 +11,8 @@ class FeedbackController extends Controller
 {
     public function index()
     {
-        $feedbacks = Feedback::orderBy('created_at', 'DESC')->get();
-
+        $feedbacks = Feedback::orderBy('created_at', 'DESC')->paginate(10);
+        
         return view('feedback.index', compact('feedbacks'));
     }
 

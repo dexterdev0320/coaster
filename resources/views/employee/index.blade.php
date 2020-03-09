@@ -4,7 +4,11 @@
 <div class="container">
     <div class="row">
         <div class="col-lg-12">
-            @if (session('message'))
+            @if (session('success') === false)
+                <div class="alert alert-danger text-center">
+                    {{ session('message') }}
+                </div>
+            @elseif(session('success') === true)
                 <div class="alert alert-success text-center">
                     {{ session('message') }}
                 </div>

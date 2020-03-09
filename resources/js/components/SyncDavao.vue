@@ -15,8 +15,8 @@
                     <div class="modal-body">
                         <CubeShadow v-if="loading === true" style="width: 200px; height: 200px; margin: 0 auto;" class=""></CubeShadow>
                         <div v-else>
-                            <h1 class="text-success">{{ message }}</h1>
-                            <h5 class="text-info"> You will be redirected to employees list!</h5>
+                            <h1 v-bind:class="[sync_response.success === false ? 'text-danger' : 'text-success']">{{ message }}</h1>
+                            <h5 v-if="sync_response.success" class="text-info"> You will be redirected to employees list!</h5>
                         </div>
                     </div>
                     <div class="modal-footer justify-content-center" v-if="loading === false">
@@ -38,6 +38,7 @@ export default {
             modal: false,
             loading: false,
             message: '',
+            sync_response: {},
         }
     },
     components: {
@@ -48,9 +49,15 @@ export default {
             this.modal = true;
             this.loading = true;
             Axios.post('api/sync/davao')
-                .then(res => {
-                    this.loading = false;
-                    this.message = res.data.message;
+                .then(res => this.sync_response = res.data)
+                .then(res =>{
+                    if(res.success === false){
+                        this.loading = false;
+                        this.message = res.message;
+                    }else{
+                        this.loading = false;
+                        this.message = this.sync_response.message;
+                    }
                 })
         }
     }

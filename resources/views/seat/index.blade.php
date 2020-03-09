@@ -12,7 +12,7 @@
                     <i class="fas fa-print"></i>
                 </a>
                 <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
-                    Cancel Checked Seat/s
+                    Cancel Booking/s
                 </button>
             </div>
         </div>
@@ -33,8 +33,8 @@
                         Are you sure you want to cancel the Reservation?
                         </div>
                         <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-dismiss="modal">No</button>
-                        <button type="submit" class="btn btn-danger">Yes, please</button>
+                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">No, Thanks</button>
+                        <button type="submit" class="btn btn-danger btn-sm">Yes, please</button>
                         </div>
                     </div>
                     </div>
@@ -52,7 +52,6 @@
                             <th scope="col">Destination</th>
                             <th scope="col">Seat Code</th>
                             <th scope="col">Status</th>
-                            <th scope="col">Cancel</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -66,7 +65,6 @@
                                     <td>{{ ($seat->dest_id) ? $seat->destination->place : '' }}</td>
                                     <td>{{ $seat->code }}</td>
                                     <td>{{ $seat->status }}</td>
-                                    <td><a href="{{ route('seat.cancel', $seat->id) }}" class="btn btn-danger btn-sm" {{ ($seat->emp_id) ? '' : 'hidden' }}>Cancel</a></td>
                                 </tr>
                             @endforeach
                         </tbody>
