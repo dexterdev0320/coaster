@@ -3,8 +3,13 @@
 //     return $request->user();
 // });
 
-
+Route::get('employees', 'EmployeeController@allEmployee');
+Route::get('departments', 'EmployeeController@allDepartment');
+Route::match(['post', 'get'], 'employees/search', 'EmployeeController@searchEmployees');
+Route::post('add-visitor', 'EmployeeController@add_visitor');
 Route::post('employee', 'EmployeeController@search_employee');
+Route::post('employee-flag-to-priority', 'EmployeeController@isPriority');
+Route::post('employee-flag-to-blacklist', 'EmployeeController@isBlacklist');
 
 Route::post('seats', 'SeatStatusController@seats');
 Route::post('seat/cancel-booking', 'SeatStatusController@cancelBooking');

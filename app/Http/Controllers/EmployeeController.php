@@ -36,76 +36,6 @@ class EmployeeController extends Controller
         return view('employee.index', compact('employees'));
     }
 
-    public function priority(Request $request, $id)
-    {
-        $employee = EmployeeStatus::where('emp_id', $id)->first();
-
-        if(!$employee){
-            $insert_priority_data = EmployeeStatus::create([
-                'emp_id' => $id,
-                'ispriority' => True
-            ]);
-        }
-
-        if(isset($insert_priority_data)){
-            return back();
-        }
-
-        if($employee->isblacklist == True){
-            $upd_emp = EmployeeStatus::where('emp_id', $employee->emp_id)
-                        ->update([
-                            'ispriority' => true,
-                            'isblacklist' => false,
-                        ]);
-        }
-
-        if(isset($upd_emp)){
-            return back();
-        }
-        
-        $delete_emp = EmployeeStatus::where('emp_id', $id)->delete();
-
-        if($delete_emp){
-            return back();
-        }
-        
-    }
-
-    public function blacklist($id)
-    {
-        $employee = EmployeeStatus::where('emp_id', $id)->first();
-
-        if(!$employee){
-            $insert_priority_data = EmployeeStatus::create([
-                'emp_id' => $id,
-                'isblacklist' => 1
-            ]);
-        }
-
-        if(isset($insert_priority_data)){
-            return back();
-        }
-
-        if($employee->ispriority == True){
-            $upd_emp = EmployeeStatus::where('emp_id', $employee->emp_id)
-                            ->update([
-                                'ispriority' => false,
-                                'isblacklist' => true,
-                            ]);
-        }
-
-        if(isset($upd_emp)){
-            return back();
-        }
-
-        $delete_emp = EmployeeStatus::where('emp_id', $id)->delete();
-
-        if($delete_emp){
-            return back();
-        }
-        
-    }
-
     public function addvisitor(Request $request)
     {
         $validation = Validator::make($request->all(),[
@@ -122,6 +52,7 @@ class EmployeeController extends Controller
         if($expDate < date('Y-m-d')){
             return redirect('employees')->with(['success' => false, 'message' => 'Failed to add visitor. The Expiration Date is below the date today']);
         }
+
         $visitorID = Employee::where('emp_id', 'NOT LIKE', '%PMC%')->orderBy('created_at', 'DESC')->first();
 
         if(!isset($visitorID)){
@@ -148,6 +79,152 @@ class EmployeeController extends Controller
     }
 
     // API STARTS HERE
+
+    public function allEmployee()
+    {
+        $employees = DB::table('employees')
+                        ->leftJoin('employees_status', 'employees.id', '=', 'employees_status.emp_id')
+                        ->select(['employees.*', 'employees_status.ispriority', 'employees_status.isblacklist'])
+                        ->where('employees.isactive', 1)
+                        ->paginate(10);
+
+        return response()->json($employees);
+    }
+
+    public function allDepartment()
+    {
+        $departments = DB::table('employees')->distinct()->where('dept', '!=', null)->orderBy('dept', 'ASC')->get(['dept']);
+
+        return response()->json($departments);
+    }
+
+    public function searchEmployees(Request $request)
+    {
+        $employees = DB::table('employees')
+                        ->leftJoin('employees_status', 'employees.id', '=', 'employees_status.emp_id')
+                        ->select(['employees.*', 'employees_status.ispriority', 'employees_status.isblacklist'])
+                        ->where('employees.isactive', 1)
+                        ->where('name', 'LIKE', '%' . $request->name . '%')
+                        ->paginate(10)
+                        ->appends(['name' => $request->name]);
+
+        return response()->json($employees);
+    }
+
+    public function add_visitor(Request $request)
+    {
+        $this->validate($request, [
+            'name' => 'required|min:3',
+            'department' => 'required',
+            'expiration_date' => 'required|date'
+        ]);
+
+        $expDate = date('Y-m-d', strtotime($request->expiration_date));
+
+        if($expDate < date('Y-m-d')){
+            return response()->json(['success' => false, 'message' => 'Failed to add visitor. The Expiration Date is below the date today']);
+        }
+
+        $visitorID = Employee::where('emp_id', 'NOT LIKE', '%PMC%')->orderBy('created_at', 'DESC')->first();
+
+        if(!isset($visitorID)){
+            $addVisitor = Employee::create([
+                'emp_id' => 1,
+                'name' => $request->name,
+                'dept' => $request->department,
+                'expiration_date' => $request->expiration_date,
+                'isactive' => 1
+            ]);
+        }
+
+        if(isset($addVisitor)){
+            // return redirect('employees')->with(['success' => true, 'message' => 'Visitor added successfully']);
+            return response()->json(['success' => true, 'message' => 'Visitor added successfully']);
+        }
+
+        $addVisitor = Employee::create([
+            'emp_id' => $visitorID->emp_id + 1,
+            'name' => $request->name,
+            'dept' => $request->department,
+            'expiration_date' => $request->expiration_date,
+            'isactive' => 1
+        ]);
+        
+        // return redirect('employees')->with(['success' => true, 'message' => 'Visitor added successfully']);
+        return response()->json(['success' => true, 'message' => 'Visitor added successfully']);
+    }
+
+    public function isPriority(Request $request)
+    {
+        $id = $request->id;
+        $employee = EmployeeStatus::where('emp_id', $id)->first();
+
+        if(!$employee){
+            $insert_priority_data = EmployeeStatus::create([
+                'emp_id' => $id,
+                'ispriority' => True
+            ]);
+        }
+
+        if(isset($insert_priority_data)){
+            return response()->json(['success' => true, 'message' => 'Employee is now in the Priority List']);
+        }
+
+        if($employee->isblacklist == True){
+            $upd_emp = EmployeeStatus::where('emp_id', $employee->emp_id)
+                        ->update([
+                            'ispriority' => true,
+                            'isblacklist' => false,
+                        ]);
+        }
+
+        if(isset($upd_emp)){
+            return response()->json(['success' => true, 'message' => 'Employee is now in the Priority List']);
+        }
+        
+        $delete_emp = EmployeeStatus::where('emp_id', $id)->delete();
+
+        if($delete_emp){
+            return response()->json(['success' => false, 'message' => 'Employee is removed in the Priority List']);
+        }
+    }
+
+    public function isBlacklist(Request $request)
+    {
+        $id = $request->id;
+        $employee = EmployeeStatus::where('emp_id', $id)->first();
+
+        if(!$employee){
+            $insert_priority_data = EmployeeStatus::create([
+                'emp_id' => $id,
+                'isblacklist' => 1
+            ]);
+        }
+
+        if(isset($insert_priority_data)){
+            return response()->json(['success' => true, 'message' => 'Employee is now Blacklisted']);
+        }
+
+        if($employee->ispriority == True){
+            $upd_emp = EmployeeStatus::where('emp_id', $employee->emp_id)
+                            ->update([
+                                'ispriority' => false,
+                                'isblacklist' => true,
+                            ]);
+        }
+
+        if(isset($upd_emp)){
+            return response()->json(['success' => true, 'message' => 'Employee is now Blacklisted']);
+        }
+
+        $delete_emp = EmployeeStatus::where('emp_id', $id)->delete();
+
+        if($delete_emp){
+            return response()->json(['success' => false, 'message' => 'Employee is removed in the Blacklist']);
+        }
+    }
+
+
     public function test()
     {
         $rooms_get = 'http://localhost:8001/employees';

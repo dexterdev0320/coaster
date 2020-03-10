@@ -63,18 +63,18 @@ Route::group(['middleware' => ['auth']], function(){
     Route::prefix('employees')->group(function(){
         Route::match(['get', 'post'], '/', 'EmployeeController@index')->name('employee.index');
         Route::get('status', 'EmployeeStatusController@index')->name('status.index');
-        
-        Route::match(['get', 'post'], 'priority', 'EmployeeStatusController@priority')->name('status.priority');
-        Route::get('priority/{id}', 'EmployeeStatusController@remove_priority')->name('status.rmpriority');
-
-        Route::match(['get', 'post'], 'blacklist', 'EmployeeStatusController@blacklist')->name('status.blacklist');
-        Route::get('blacklist/{id}', 'EmployeeStatusController@remove_blacklist')->name('status.rmblacklist');
 
         Route::post('add-visitor', 'EmployeeController@addvisitor')->name('employee.addVisitor');
     });
 
-    Route::get('priority/{id}', 'EmployeeController@priority')->name('employee.priority');
-    Route::get('blacklist/{id}', 'EmployeeController@blacklist')->name('employee.blacklist');
+    Route::match(['get', 'post'], 'priority', 'EmployeeStatusController@priority')->name('status.priority');
+    Route::get('priority/{id}', 'EmployeeStatusController@remove_priority')->name('status.rmpriority');
+
+    Route::match(['get', 'post'], 'blacklist', 'EmployeeStatusController@blacklist')->name('status.blacklist');
+    Route::get('blacklist/{id}', 'EmployeeStatusController@remove_blacklist')->name('status.rmblacklist');
+
+    // Route::get('priority/{id}', 'EmployeeController@priority')->name('employee.priority');
+    // Route::get('blacklist/{id}', 'EmployeeController@blacklist')->name('employee.blacklist');
     // END EMPLOYEES
 
     // SCHEDULE

@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<employees-component></employees-component>
+{{-- <div class="container">
     <div class="row">
         <div class="col-lg-12">
             @if (session('success') === false)
@@ -124,5 +125,5 @@
             </nav>
         </div>
     </div>
-</div>
+</div> --}}
 @endsection

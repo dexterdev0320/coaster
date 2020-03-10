@@ -48,7 +48,7 @@ class EmployeeStatusController extends Controller
         $status = EmployeeStatus::where('emp_id', $id)->delete();
 
         if($status){
-            return redirect('employees/priority');
+            return redirect('priority');
         }
     }
 
@@ -84,7 +84,7 @@ class EmployeeStatusController extends Controller
         $status = EmployeeStatus::where('emp_id', $id)->delete();
 
         if($status){
-            return redirect('employees/blacklist');
+            return redirect('blacklist');
         }
     }
 }
