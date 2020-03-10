@@ -106,10 +106,10 @@
                     <div class="col-lg-4">
                         <div class="row p-3">
                             <div class="col-lg-12 alert alert-success">
-                                <h3>Available: {{ seats_available }} Seats</h3>
+                                <h3>Available: {{ seatsAvailable }} Seats</h3>
                             </div>
                             <div class="col-lg-12 alert alert-danger">
-                                <h3>Reserved: {{ seats_reserved }} Seats</h3>
+                                <h3>Reserved: {{ seatsOccupied }} Seats</h3>
                             </div>
                         </div>
                         <div class="row p-3">
@@ -128,8 +128,9 @@
                                 <transition name="fade">
                                     <div v-if="detail_visible === true">
                                     <hr>
-                                    <h5 style="color: blue;">Seat No: {{ search_code[0].seat_no }} ({{ search_code[0].employee.emp_id }})</h5> 
-                                    <button class="btn btn-danger btn-sm" @click="cancelBooking(search_code[0])">Cancel Booking</button>
+                                    <!-- {{ search_code[0].seat_no }} ({{ search_code[0].employee.emp_id }}) -->
+                                    <h5 style="color: blue;">Seat No: {{ search_code.seat_no }} ({{ search_code.emp_id }})</h5> 
+                                    <button class="btn btn-danger btn-sm" @click="cancelBooking(search_code)">Cancel Booking</button>
                                     </div>
                                 </transition>
                             </div>
@@ -261,7 +262,6 @@ export default {
             employees: {},
             code: '',
             employee_error: [],
-            employee_invalid: false,
             confirm_details: false,
             empid: '',
             destinations: {
@@ -273,21 +273,20 @@ export default {
             details: false,
             updateseat: {},
             schedules: [],
-            interval: undefined,
             feedback_error: [],
             feedback: { comment: '', empID: ''},
             moment: moment,
             saturday: [],
             monday: [],
             search_employee: {},
-            search_code: [],
+            search_code: {},
         }
     },
     mounted() {
         this.fetchSchedulesAPI();
         if(moment().day(1).hours(6) <= moment() && moment().day(6).hours(18) >= moment()){
             this.fetchSeatsAPI(this.component); 
-            setInterval(() => this.fetchSeatsAPI(this.component), 5000)
+            setInterval(() => this.fetchSeatsAPI(this.component), 3000)
             this.fetchDestinationAPI();
         }
         
@@ -299,9 +298,6 @@ export default {
                 refresh: this.refresh
             })
                 .then(res => this.seats = res.data.data)
-                .then(data => {
-                    this.seatsAvailable(this.seats);
-                })
                 .catch(err => console.log(err));
         },
         fetchEmployee(seat_no, emp_id, dest_id, day){
@@ -344,18 +340,6 @@ export default {
                 })
                 .catch(err => console.log(err))
         },
-        refreshAll(){
-            Axios.post('api/refresh-all', {
-                saturday: this.saturday,
-                monday: this.monday
-            })
-            .then(res => {
-                if(res.data.success == true){
-                    this.fetchSchedulesAPI();
-                }
-            })
-            .catch(err => console.log(err));
-        },
         imageSelected(status, id, index){
             index = index+1;
 			if(status === 'Occupied'){
@@ -370,20 +354,6 @@ export default {
                 }
 			}
         },
-        seatsAvailable(seat){
-            let total = seat.length;
-            let seats = seat;
-            this.seats_available = 0;
-            this.seats_reserved = 0;
-            for (let index = 0; index < total; index++) {
-                const element = seats[index];
-                if(element.status === 'Available'){
-                    this.seats_available += 1;
-                }else{
-                    this.seats_reserved += 1;
-                }
-            }
-        },
         seatStatus(id, status, seat_no){
             if(status === 'Occupied'){
                 return toastr.error('Seat is already occupied. Please choose another seat');
@@ -393,12 +363,12 @@ export default {
                 this.selected = id;
             }
         },
-        updateSeat(seatid, empid, destid, code){
+        updateSeat(seatid, emp_id, dest_id, code){
             
                 Axios.put('api/seat', {
                         seat_id: seatid,
-                        emp_id: empid,
-                        dest_id: destid,
+                        emp_id: emp_id,
+                        dest_id: dest_id,
                         day: this.component,
                         seat_no: this.seatno,
                         code: code,
@@ -407,14 +377,14 @@ export default {
                         if(res.data.success === false){
                             toastr.error(res.data.message);
                         }else{
-                            this.fetchSeatsAPI(this.component);
+                            this.seats = this.seats.map(seat => seat.seat_no == this.seatno ? { ...seat, emp_id: this.employees.emp_id, dest_id, code, status: 'Occupied' } : seat );
                             this.seatno = '';
                             this.empid = '';
                             this.destid = '';
                             this.selected = undefined;
                             this.employee = '';
                             this.confirm_details = false;
-                            // this.search_employee = {}; TO BE CONTINUE
+                            this.employee_error = [];
                             toastr.success(res.data.message);
                         }
                     });
@@ -422,29 +392,16 @@ export default {
         },
         searchCode(code){
             const seats = this.seats;
-            const total_seats = this.seats.length;
             let success = false;
             if(this.seat_code === ''){
                 toastr.warning('Please insert seat code');
             }else{
-                this.search_code = seats.filter(seat => seat.code == code);
-                
-                if(this.search_code.length == 0){
+                this.search_code = seats.find(seat => seat.code == code);
+                if(!this.search_code){
                     this.detail_visible = false;
                     return toastr.error('Seat code does not exist');
                 }
                 this.detail_visible = true;
-                // for (let index = 0; index < total_seats; index++) {
-                //     const seat = seats[index];
-                //     if(seat.code != null){
-                //         if(seat.code.toUpperCase() === code.toUpperCase()){
-                //             this.seat_no = index+1;
-                //             success = true;
-                //             this.detail_visible = true;
-                //             break;
-                //         }
-                //     }
-                // }
             }
         },
 
@@ -463,7 +420,7 @@ export default {
                 },
                 function(isConfirm) {
                 if (isConfirm) {
-                    Axios.post('api/seat/cancel-booking',{
+                    Axios.post('api/seat/cancel-booking', {
                         seatID: details.id
                     })
                     .then(res => {
@@ -472,9 +429,8 @@ export default {
                         }else{
                             _this.detail_visible = false;
                             _this.seat_code = ''; 
-                            _this.fetchSeatsAPI(details.day); 
+                            _this.seats = _this.seats.map(seat => (seat.id == details.id) ? { ...seat, emp_id: null, code: null, dest_id: null, status: 'Available' } : seat);
                             swal("Success!", res.message, "success"); 
-                            
                         }
                     })
                     .catch(err => console.log(err));
@@ -520,6 +476,14 @@ export default {
                             this.feedback_error = error.response.data.errors;
                         }
                     });
+        }
+    },
+    computed: {
+        seatsAvailable() {
+            return this.seats.filter(seat => seat.status == 'Available').length;
+        },
+        seatsOccupied() {
+            return this.seats.filter(seat => seat.status == 'Occupied').length;
         }
     }
     

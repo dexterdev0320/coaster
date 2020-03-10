@@ -2013,13 +2013,6 @@ __webpack_require__.r(__webpack_exports__);
         }
       });
     },
-    isConfirm: function isConfirm(success) {
-      if (success) {
-        this.fetchDestinationAPI();
-      } else {
-        swal("Cancelled", "Your imaginary file is safe :)", "error");
-      }
-    },
     deleteDestination: function deleteDestination(id) {
       var _this = this;
 
@@ -2095,6 +2088,13 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+//
 //
 //
 //
@@ -2359,7 +2359,6 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       employees: {},
       code: '',
       employee_error: [],
-      employee_invalid: false,
       confirm_details: false,
       empid: '',
       destinations: {
@@ -2371,7 +2370,6 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       details: false,
       updateseat: {},
       schedules: [],
-      interval: undefined,
       feedback_error: [],
       feedback: {
         comment: '',
@@ -2381,7 +2379,7 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       saturday: [],
       monday: [],
       search_employee: {},
-      search_code: []
+      search_code: {}
     };
   },
   mounted: function mounted() {
@@ -2393,7 +2391,7 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       this.fetchSeatsAPI(this.component);
       setInterval(function () {
         return _this2.fetchSeatsAPI(_this2.component);
-      }, 5000);
+      }, 3000);
       this.fetchDestinationAPI();
     }
   },
@@ -2406,8 +2404,6 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         refresh: this.refresh
       }).then(function (res) {
         return _this3.seats = res.data.data;
-      }).then(function (data) {
-        _this3.seatsAvailable(_this3.seats);
       })["catch"](function (err) {
         return console.log(err);
       });
@@ -2466,20 +2462,6 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         return console.log(err);
       });
     },
-    refreshAll: function refreshAll() {
-      var _this7 = this;
-
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/refresh-all', {
-        saturday: this.saturday,
-        monday: this.monday
-      }).then(function (res) {
-        if (res.data.success == true) {
-          _this7.fetchSchedulesAPI();
-        }
-      })["catch"](function (err) {
-        return console.log(err);
-      });
-    },
     imageSelected: function imageSelected(status, id, index) {
       index = index + 1;
 
@@ -2493,22 +2475,6 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         }
       }
     },
-    seatsAvailable: function seatsAvailable(seat) {
-      var total = seat.length;
-      var seats = seat;
-      this.seats_available = 0;
-      this.seats_reserved = 0;
-
-      for (var index = 0; index < total; index++) {
-        var element = seats[index];
-
-        if (element.status === 'Available') {
-          this.seats_available += 1;
-        } else {
-          this.seats_reserved += 1;
-        }
-      }
-    },
     seatStatus: function seatStatus(id, status, seat_no) {
       if (status === 'Occupied') {
         return toastr.error('Seat is already occupied. Please choose another seat');
@@ -2518,13 +2484,13 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         this.selected = id;
       }
     },
-    updateSeat: function updateSeat(seatid, empid, destid, code) {
-      var _this8 = this;
+    updateSeat: function updateSeat(seatid, emp_id, dest_id, code) {
+      var _this7 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.put('api/seat', {
         seat_id: seatid,
-        emp_id: empid,
-        dest_id: destid,
+        emp_id: emp_id,
+        dest_id: dest_id,
         day: this.component,
         seat_no: this.seatno,
         code: code
@@ -2532,47 +2498,42 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
         if (res.data.success === false) {
           toastr.error(res.data.message);
         } else {
-          _this8.fetchSeatsAPI(_this8.component);
-
-          _this8.seatno = '';
-          _this8.empid = '';
-          _this8.destid = '';
-          _this8.selected = undefined;
-          _this8.employee = '';
-          _this8.confirm_details = false; // this.search_employee = {}; TO BE CONTINUE
-
+          _this7.seats = _this7.seats.map(function (seat) {
+            return seat.seat_no == _this7.seatno ? _objectSpread({}, seat, {
+              emp_id: _this7.employees.emp_id,
+              dest_id: dest_id,
+              code: code,
+              status: 'Occupied'
+            }) : seat;
+          });
+          _this7.seatno = '';
+          _this7.empid = '';
+          _this7.destid = '';
+          _this7.selected = undefined;
+          _this7.employee = '';
+          _this7.confirm_details = false;
+          _this7.employee_error = [];
           toastr.success(res.data.message);
         }
       });
     },
     searchCode: function searchCode(code) {
       var seats = this.seats;
-      var total_seats = this.seats.length;
       var success = false;
 
       if (this.seat_code === '') {
         toastr.warning('Please insert seat code');
       } else {
-        this.search_code = seats.filter(function (seat) {
+        this.search_code = seats.find(function (seat) {
           return seat.code == code;
         });
 
-        if (this.search_code.length == 0) {
+        if (!this.search_code) {
           this.detail_visible = false;
           return toastr.error('Seat code does not exist');
         }
 
-        this.detail_visible = true; // for (let index = 0; index < total_seats; index++) {
-        //     const seat = seats[index];
-        //     if(seat.code != null){
-        //         if(seat.code.toUpperCase() === code.toUpperCase()){
-        //             this.seat_no = index+1;
-        //             success = true;
-        //             this.detail_visible = true;
-        //             break;
-        //         }
-        //     }
-        // }
+        this.detail_visible = true;
       }
     },
     cancelBooking: function cancelBooking(details) {
@@ -2598,9 +2559,14 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
             } else {
               _this.detail_visible = false;
               _this.seat_code = '';
-
-              _this.fetchSeatsAPI(details.day);
-
+              _this.seats = _this.seats.map(function (seat) {
+                return seat.id == details.id ? _objectSpread({}, seat, {
+                  emp_id: null,
+                  code: null,
+                  dest_id: null,
+                  status: 'Available'
+                }) : seat;
+              });
               swal("Success!", res.message, "success");
             }
           })["catch"](function (err) {
@@ -2628,26 +2594,38 @@ var moment = __webpack_require__(/*! moment */ "./node_modules/moment/moment.js"
       this.fetchSeatsAPI(component);
     },
     submitFeedback: function submitFeedback() {
-      var _this9 = this;
+      var _this8 = this;
 
       axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('api/feedback/store', {
         comment: this.feedback.comment,
         emp_id: this.feedback.empID
       }).then(function (res) {
         if (res.data.success) {
-          _this9.feedback_error = [];
-          _this9.feedback.comment = '';
-          _this9.feedback.empID = '';
+          _this8.feedback_error = [];
+          _this8.feedback.comment = '';
+          _this8.feedback.empID = '';
           toastr.success(res.data.message);
         } else {
-          _this9.feedback_error = [];
+          _this8.feedback_error = [];
           toastr.error(res.data.message);
         }
       })["catch"](function (error) {
         if (error.response.status == 422) {
-          _this9.feedback_error = error.response.data.errors;
+          _this8.feedback_error = error.response.data.errors;
         }
       });
+    }
+  },
+  computed: {
+    seatsAvailable: function seatsAvailable() {
+      return this.seats.filter(function (seat) {
+        return seat.status == 'Available';
+      }).length;
+    },
+    seatsOccupied: function seatsOccupied() {
+      return this.seats.filter(function (seat) {
+        return seat.status == 'Occupied';
+      }).length;
     }
   }
 });
@@ -63037,7 +63015,7 @@ var render = function() {
                           _c("h3", [
                             _vm._v(
                               "Available: " +
-                                _vm._s(_vm.seats_available) +
+                                _vm._s(_vm.seatsAvailable) +
                                 " Seats"
                             )
                           ])
@@ -63051,7 +63029,7 @@ var render = function() {
                           _c("h3", [
                             _vm._v(
                               "Reserved: " +
-                                _vm._s(_vm.seats_reserved) +
+                                _vm._s(_vm.seatsOccupied) +
                                 " Seats"
                             )
                           ])
@@ -63137,11 +63115,9 @@ var render = function() {
                                   _c("h5", { staticStyle: { color: "blue" } }, [
                                     _vm._v(
                                       "Seat No: " +
-                                        _vm._s(_vm.search_code[0].seat_no) +
+                                        _vm._s(_vm.search_code.seat_no) +
                                         " (" +
-                                        _vm._s(
-                                          _vm.search_code[0].employee.emp_id
-                                        ) +
+                                        _vm._s(_vm.search_code.emp_id) +
                                         ")"
                                     )
                                   ]),
@@ -63153,7 +63129,7 @@ var render = function() {
                                       on: {
                                         click: function($event) {
                                           return _vm.cancelBooking(
-                                            _vm.search_code[0]
+                                            _vm.search_code
                                           )
                                         }
                                       }

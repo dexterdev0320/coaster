@@ -97,13 +97,6 @@ export default {
                     }
                 })
         },
-        isConfirm(success){
-            if(success){
-                this.fetchDestinationAPI();
-            }else{
-                swal("Cancelled", "Your imaginary file is safe :)", "error");
-            }
-        },
         deleteDestination(id){
             let _this = this;
             swal({

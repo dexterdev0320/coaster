@@ -200,23 +200,12 @@ class SeatStatusController extends Controller
         ]);
 
         $seats = SeatStatus::with('employee')->where('day', 'like', '%'.$request->day.'%')->get();
-        // return response()->json($seats);
+    
         if(count($seats) != 0){
-
             return SeatResource::collection($seats);
         }
-
-        // $total_seats = 40;
-        // for ($i=1; $i <= $total_seats; $i++) { 
-        //     SeatStatus::create([
-        //         'seat_no' => $i,
-        //         'status' => 1,
-        //         'day' => $request->day,
-        //     ]);
-        // }
         
         return SeatResource::collection($seats);
-
     }
     
     public function update(Request $request, SeatStatus $seatStatus)
